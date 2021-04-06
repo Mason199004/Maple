@@ -31,8 +31,8 @@ namespace Maple
 			var set = new Settings();
 			var table = (TomlTable)data["Maple"];
 			set.ProjectName = table["ProjectName"].ToString();
-			set.CSrc = (from i in ((Tomlyn.Model.TomlArray) table["CSrc"]) select i as string).ToList();
-			set.CXXSrc = (from i in ((Tomlyn.Model.TomlArray) table["CXXSrc"]) select i as string).ToList();
+			set.CSrc = (from i in ((Tomlyn.Model.TomlArray) table["C_SRC"]) select i as string).ToList();
+			set.CXXSrc = (from i in ((Tomlyn.Model.TomlArray) table["CXX_SRC"]) select i as string).ToList();
 			set.Dependencies = (from i in ((Tomlyn.Model.TomlArray) table["Dependencies"]) select i as string).ToList();
 			return set;
 		}
@@ -48,8 +48,8 @@ namespace Maple
 						Items =
 						{
 							{"ProjectName", set.ProjectName},
-							{"CSrc", set.CSrc.ToArray()},
-							{"CXXSrc", set.CXXSrc.ToArray()},
+							{"C_SRC", set.CSrc.ToArray()},
+							{"CXX_SRC", set.CXXSrc.ToArray()},
 							{"Dependencies", set.Dependencies.ToArray()}
 						}
 					}

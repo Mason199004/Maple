@@ -112,8 +112,8 @@ namespace Maple
                         Items =
                         {
                             {"ProjectName", "Test"},
-                            {"CSrc", new string[]{"main.c"}},
-                            {"CXXSrc", new string[]{}},
+                            {"C_SRC", new string[]{"main.c"}},
+                            {"CXX_SRCc", new string[]{}},
                             {"Dependencies", new string[]{}}
                         }
                     }
