@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Tomlyn;
 using Tomlyn.Model;
@@ -12,8 +13,18 @@ namespace Maple
 		C,
 		CXX
 	}
+	
+	
 	public class Settings
 	{
+		public static Settings _default = new Settings()
+		{
+			CSrc = new string[] { "main.c" }.ToList(),
+			CXXSrc = new string[] { }.ToList(),
+			Dependencies = new string[] { }.ToList(),
+			ProjectName = "ConsoleApplication"
+
+		};
 		public string ProjectName { get; set; }
 		public Lang Language { get; set; }
 		public List<string> CSrc { get; set; }

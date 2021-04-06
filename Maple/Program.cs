@@ -103,29 +103,15 @@ namespace Maple
         #endregion
         static void NewProj(string Name)
         {
-            var doc = new DocumentSyntax()
-            {
-                Tables =
-                {
-                    new TableSyntax("Maple")
-                    {
-                        Items =
-                        {
-                            {"ProjectName", "Test"},
-                            {"C_SRC", new string[]{"main.c"}},
-                            {"CXX_SRCc", new string[]{}},
-                            {"Dependencies", new string[]{}}
-                        }
-                    }
-                }
-            };
+            var def = Settings._default;
+            def.ProjectName = Name;
             Directory.CreateDirectory(Name);
             Directory.SetCurrentDirectory(Name);
             Directory.CreateDirectory("src");
             Directory.CreateDirectory("build");
             Directory.CreateDirectory("working");
             Directory.CreateDirectory("lib");
-            File.WriteAllText("build.maple", $"#Maple build file generated using Maple v{Version} on {DateTime.Now.ToString()}\n" + doc.ToString());
+            File.WriteAllText("build.maple", Helper.ObjToToml(def));
             File.WriteAllText("src/main.c", ExampleC);
         }
 
