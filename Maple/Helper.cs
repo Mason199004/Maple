@@ -46,9 +46,9 @@ namespace Maple
 			var set = new Settings();
 			var table = (TomlTable)data["Maple"];
 			set.ProjectName = GetValueOrDefault<string>(table, "ProjectName");
-			set.CSrc = (from i in ((Tomlyn.Model.TomlArray) table["C_SRC"]) select i as string).ToList();
-			set.CXXSrc = (from i in ((Tomlyn.Model.TomlArray) table["CXX_SRC"]) select i as string).ToList();
-			set.Dependencies = (from i in ((Tomlyn.Model.TomlArray) table["Dependencies"]) select i as string).ToList();
+			set.CSrc = GetValueOrDefault<List<string>>(table, "C_SRC");
+			set.CXXSrc = GetValueOrDefault<List<string>>(table, "CXX_SRC");
+			set.Dependencies = GetValueOrDefault<List<string>>(table, "Dependencies");
 			set.AutoAddSrc = GetValueOrDefault<bool>(table,"AUTO_ADD_SRC");
 			set.RecSearchSrc = GetValueOrDefault<bool>(table,"RECURSE_SRC");
 			
@@ -57,6 +57,12 @@ namespace Maple
 
 		public static T GetValueOrDefault<T>(TomlTable table, string KeyName)
 		{
+			if (T == typeof(List<string))
+            {
+				var value = table.ContainsKey(KeyName) ? table[KeyName] : default(List<string>);
+				
+				return (T)(from i in ((Tomlyn.Model.TomlArray)value) select i as string).ToList();
+			}
 			return table.ContainsKey(KeyName) ? (T) table[KeyName] : default;
 		}
 
@@ -66,7 +72,7 @@ namespace Maple
 			{
 				Tables =
 				{
-					new TableSyntax("Maple")
+					new TableSyntax("MapleProject")
 					{
 						Items =
 						{
