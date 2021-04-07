@@ -67,6 +67,10 @@ namespace Maple
                         "*.c",SearchOption.TopDirectoryOnly);
                     var cxxfiles = Directory.GetFiles(dir,
                         "*.cpp",SearchOption.TopDirectoryOnly);
+                    Array.Sort(cfiles);
+                    Array.Sort(cxxfiles);
+                    settings.CSrc.Sort();
+                    settings.CXXSrc.Sort();
                     var chash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Concat(cfiles)));
                     var cxxhash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Concat(cxxfiles)));
                     var projchash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Concat(settings.CSrc)));

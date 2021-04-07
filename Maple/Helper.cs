@@ -44,7 +44,7 @@ namespace Maple
 			
 			var data = Toml.Parse(toml).ToModel();
 			var set = new Settings();
-			var table = (TomlTable)data["Maple"];
+			var table = (TomlTable)data["MapleProject"];
 			set.ProjectName = GetValueOrDefault<string>(table, "ProjectName");
 			set.CSrc = GetValueOrDefault<List<string>>(table, "C_SRC");
 			set.CXXSrc = GetValueOrDefault<List<string>>(table, "CXX_SRC");
@@ -57,11 +57,10 @@ namespace Maple
 
 		public static T GetValueOrDefault<T>(TomlTable table, string KeyName)
 		{
-			if (T == typeof(List<string))
+			if (typeof(T) == typeof(List<string>))
             {
 				var value = table.ContainsKey(KeyName) ? table[KeyName] : default(List<string>);
-				
-				return (T)(from i in ((Tomlyn.Model.TomlArray)value) select i as string).ToList();
+				return (T)(object)(from i in ((Tomlyn.Model.TomlArray)value) select i as string).ToList();
 			}
 			return table.ContainsKey(KeyName) ? (T) table[KeyName] : default;
 		}
