@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
+using System.Security.Cryptography;
+using System.Text;
 using Tomlyn;
 using Tomlyn.Syntax;
 
@@ -15,8 +17,77 @@ namespace Maple
         public const string Version = "0.0.1";
         static void Main(string[] args)
         {
-           ParseOptions(args); 
-            
+            try
+            {
+                AddFiles();
+            }
+            catch (Exception e)
+            {
+                
+            }
+            ParseOptions(args);
+        }
+
+        static void AddFiles()
+        {
+            var mapleBuild = GetMapleBuild(new DirectoryInfo(Directory.GetCurrentDirectory()));
+            var settings = Helper.TomlToObj(File.ReadAllText(mapleBuild));
+            if (settings.AutoAddSrc)
+            {
+                if (settings.RecSearchSrc)
+                {
+                    var dir = new FileInfo(mapleBuild).Directory.FullName + "/src";
+                    var cfiles = Directory.GetFiles(dir,
+                        "*.c",SearchOption.AllDirectories);
+                    var cxxfiles = Directory.GetFiles(dir,
+                        "*.cpp",SearchOption.AllDirectories);
+                    var chash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Concat(cfiles)));
+                    var cxxhash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Concat(cxxfiles)));
+                    var projchash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Concat(settings.CSrc)));
+                    var projcxxhash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Concat(settings.CXXSrc)));
+                    if (!projchash.Equals(chash))
+                    {
+                        settings.CSrc =
+                            (from i in cfiles
+                                select Path.GetRelativePath(dir, i))
+                            .ToList();
+                    }
+                    if (!projcxxhash.Equals(cxxhash))
+                    {
+                        settings.CXXSrc =
+                            (from i in cxxfiles
+                                select Path.GetRelativePath(new DirectoryInfo(mapleBuild).ToString() + "/src", i))
+                            .ToList();
+                    }
+                }
+                else
+                {
+                    var dir = new FileInfo(mapleBuild).Directory.FullName + "/src";
+                    var cfiles = Directory.GetFiles(dir,
+                        "*.c",SearchOption.TopDirectoryOnly);
+                    var cxxfiles = Directory.GetFiles(dir,
+                        "*.cpp",SearchOption.TopDirectoryOnly);
+                    var chash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Concat(cfiles)));
+                    var cxxhash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Concat(cxxfiles)));
+                    var projchash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Concat(settings.CSrc)));
+                    var projcxxhash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Concat(settings.CXXSrc)));
+                    if (!projchash.Equals(chash))
+                    {
+                        settings.CSrc =
+                            (from i in cfiles
+                                select Path.GetRelativePath(dir, i))
+                            .ToList();
+                    }
+                    if (!projcxxhash.Equals(cxxhash))
+                    {
+                        settings.CXXSrc =
+                            (from i in cxxfiles
+                                select Path.GetRelativePath(new DirectoryInfo(mapleBuild).ToString() + "/src", i))
+                            .ToList();
+                    }
+                }
+                File.WriteAllText(mapleBuild, Helper.ObjToToml(settings));
+            }
         }
         
         static void ParseOptions(string[] args)
@@ -39,9 +110,10 @@ namespace Maple
 
         static void BuildProj()
         {
-            if (File.Exists("build.maple"))
+            if (true)
             {
-                var settings = Helper.TomlToObj(File.ReadAllText("build.maple"));
+                var mapleBuild = GetMapleBuild(new DirectoryInfo(Directory.GetCurrentDirectory()));
+                var settings = Helper.TomlToObj(File.ReadAllText(mapleBuild));
                 Console.WriteLine("Building Project \"" + settings.ProjectName + "\"");
                 Process p = default;
                 List<string> oFiles = new List<string>();
@@ -88,10 +160,7 @@ namespace Maple
                 p.Start();
                 p.WaitForExit();
             }
-            else
-            {
-                Console.WriteLine("Error: Failed to locate build.maple!");
-            }
+            
         }
         #region ExampleC
         private static string ExampleC = "#include <stdio.h>\n" +
