@@ -15,25 +15,24 @@ namespace Maple
 	}
 	
 	
-	public class Settings
+	public class Settings : GlobalConfig
 	{
-		public static Settings _default = new Settings()
-		{
-			CSrc = new string[] { "main.c" }.ToList(),
-			CXXSrc = new string[] { }.ToList(),
-			Dependencies = new string[] { }.ToList(),
-			ProjectName = "ConsoleApplication",
-			AutoAddSrc = true,
-			RecSearchSrc = true
+        public Settings() : base()
+        {
+			CSrc = new string[] { "" }.ToList();
+			CXXSrc = new string[] { }.ToList();
+			Dependencies = new string[] { }.ToList();
+			ProjectName = "";
+        }
 
-		};
+		[Obsolete]
+		public static Settings _default = new Settings();
+		
 		public string ProjectName { get; set; }
 		public Lang Language { get; set; }
 		public List<string> CSrc { get; set; }
 		public List<string> CXXSrc { get; set; }
 		public List<string> Dependencies { get; set; }
-		public bool AutoAddSrc { get; set; }
-		public bool RecSearchSrc { get; set; }
 
 	}
 	public class Helper
@@ -59,8 +58,13 @@ namespace Maple
 		{
 			if (typeof(T) == typeof(List<string>))
             {
-				var value = table.ContainsKey(KeyName) ? table[KeyName] : default(List<string>);
-				return (T)(object)(from i in ((Tomlyn.Model.TomlArray)value) select i as string).ToList();
+				if (table.ContainsKey(KeyName))
+                {
+					var value = table[KeyName];
+					return (T)(object)(from i in ((Tomlyn.Model.TomlArray)value) select i as string).ToList();
+				}
+				return (T)(object)new List<string>();
+				
 			}
 			return table.ContainsKey(KeyName) ? (T) table[KeyName] : default;
 		}

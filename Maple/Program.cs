@@ -56,7 +56,7 @@ namespace Maple
                     {
                         settings.CXXSrc =
                             (from i in cxxfiles
-                                select Path.GetRelativePath(new DirectoryInfo(mapleBuild).ToString() + "/src", i))
+                                select Path.GetRelativePath(dir, i))
                             .ToList();
                     }
                 }
@@ -86,7 +86,7 @@ namespace Maple
                     {
                         settings.CXXSrc =
                             (from i in cxxfiles
-                                select Path.GetRelativePath(new DirectoryInfo(mapleBuild).ToString() + "/src", i))
+                                select Path.GetRelativePath(dir, i))
                             .ToList();
                     }
                 }
@@ -118,6 +118,9 @@ namespace Maple
             {
                 var mapleBuild = GetMapleBuild(new DirectoryInfo(Directory.GetCurrentDirectory()));
                 var settings = Helper.TomlToObj(File.ReadAllText(mapleBuild));
+                var CWD = Directory.GetCurrentDirectory();
+                var mapleDir = mapleBuild[..^11];
+                Directory.SetCurrentDirectory(mapleDir);
                 Console.WriteLine("Building Project \"" + settings.ProjectName + "\"");
                 Process p = default;
                 List<string> oFiles = new List<string>();
@@ -163,6 +166,7 @@ namespace Maple
                 p.StartInfo.Arguments += $"-o build/{settings.ProjectName}";
                 p.Start();
                 p.WaitForExit();
+                Directory.SetCurrentDirectory(CWD);
             }
             
         }
