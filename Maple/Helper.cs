@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using Tomlyn;
 using Tomlyn.Model;
@@ -13,65 +12,63 @@ namespace Maple
 		C,
 		CXX
 	}
-	
-	
+
+
 	public class Settings : GlobalConfig
 	{
-        public Settings() : base()
-        {
-			CSrc = new string[] { "" }.ToList();
+		[Obsolete] public static Settings _default = new Settings();
+
+		public Settings()
+		{
+			CSrc = new[] {""}.ToList();
 			CXXSrc = new string[] { }.ToList();
 			Dependencies = new string[] { }.ToList();
 			ProjectName = "";
-        }
+		}
 
-		[Obsolete]
-		public static Settings _default = new Settings();
-		
 		public string ProjectName { get; set; }
 		public Lang Language { get; set; }
 		public List<string> CSrc { get; set; }
 		public List<string> CXXSrc { get; set; }
 		public List<string> Dependencies { get; set; }
-
 	}
+
 	public class Helper
 	{
-		
 		public static Settings TomlToObj(string toml)
 		{
-			
 			var data = Toml.Parse(toml).ToModel();
 			var set = new Settings();
-			var table = (TomlTable)data["MapleProject"];
+			var table = (TomlTable) data["MapleProject"];
 			set.ProjectName = GetValueOrDefault<string>(table, "ProjectName");
 			set.CSrc = GetValueOrDefault<List<string>>(table, "C_SRC");
 			set.CXXSrc = GetValueOrDefault<List<string>>(table, "CXX_SRC");
 			set.Dependencies = GetValueOrDefault<List<string>>(table, "Dependencies");
-			set.AutoAddSrc = GetValueOrDefault<bool>(table,"AUTO_ADD_SRC");
-			set.RecSearchSrc = GetValueOrDefault<bool>(table,"RECURSE_SRC");
-			
+			set.AutoAddSrc = GetValueOrDefault<bool>(table, "AUTO_ADD_SRC");
+			set.RecSearchSrc = GetValueOrDefault<bool>(table, "RECURSE_SRC");
+
 			return set;
 		}
 
 		public static T GetValueOrDefault<T>(TomlTable table, string KeyName)
 		{
 			if (typeof(T) == typeof(List<string>))
-            {
+			{
 				if (table.ContainsKey(KeyName))
-                {
+				{
 					var value = table[KeyName];
-					return (T)(object)(from i in ((Tomlyn.Model.TomlArray)value) select i as string).ToList();
+					return (T) (object) (from i in (TomlArray) value select i as string).ToList();
 				}
-				return (T)(object)new List<string>();
-				
+
+				return (T) (object) new List<string>();
 			}
+
 			return table.ContainsKey(KeyName) ? (T) table[KeyName] : default;
 		}
 
 		public static string ObjToToml(Settings set)
 		{
-			var doc = new DocumentSyntax()
+			var doc = new DocumentSyntax
 			{
 				Tables =
 				{
@@ -89,7 +86,7 @@ namespace Maple
 					}
 				}
 			};
-			return $"# Maple build file generated using Maple v{Program.Version} on {DateTime.Now.ToString()}\n" +  doc.ToString();
+			return $"# Maple build file generated using Maple v{Program.Version} on {DateTime.Now.ToString()}\n" + doc;
 		}
 	}
 }

@@ -7,80 +7,93 @@ using Tomlyn.Model;
 
 namespace Maple
 {
-    //TODO Finish
-    public class MapleContext
-    {
-        public MapleContext(DirectoryInfo ProjectDir)
-        {
-            this.ProjectDir = ProjectDir;
-            Config = ConfigSystem.GetSettings(ProjectDir);
-        }
-        public DirectoryInfo ProjectDir { get; set; }
-        public Settings Config { get; private set; }
-    }
+	//TODO Finish
+	public class MapleContext
+	{
+		public MapleContext(DirectoryInfo ProjectDir)
+		{
+			this.ProjectDir = ProjectDir;
+			Config = ConfigSystem.GetSettings(ProjectDir);
+		}
 
-    public class ConfigSystem
-    {
-        
-        public static Settings TomlToObj(string toml)
-        {
-            var def = new Settings();
-            var data = Toml.Parse(toml).ToModel();
-            var set = new Settings();
-            var table = (TomlTable)data["MapleProject"];
-            set.ProjectName = GetValueOrDefault<string>(table, "ProjectName");
-            set.CSrc = GetValueOrDefault<List<string>>(table, "C_SRC");
-            set.CXXSrc = GetValueOrDefault<List<string>>(table, "CXX_SRC");
-            set.Dependencies = GetValueOrDefault<List<string>>(table, "Dependencies");
-            set.AutoAddSrc = GetValueOrDefault<bool>(table, "AUTO_ADD_SRC");
-            set.RecSearchSrc = GetValueOrDefault<bool>(table, "RECURSE_SRC");
+		public DirectoryInfo ProjectDir { get; set; }
+		public Settings Config { get; }
+	}
 
-            return set;
-        }
+	public class ConfigSystem
+	{
+		public static Settings TomlToObj(string toml)
+		{
+			var def = new Settings();
+			var data = Toml.Parse(toml).ToModel();
+			var set = new Settings();
+			var table = (TomlTable) data["MapleProject"];
+			set.ProjectName = GetValueOrDefault<string>(table, "ProjectName");
+			set.CSrc = GetValueOrDefault<List<string>>(table, "C_SRC");
+			set.CXXSrc = GetValueOrDefault<List<string>>(table, "CXX_SRC");
+			set.Dependencies = GetValueOrDefault<List<string>>(table, "Dependencies");
+			set.AutoAddSrc = GetValueOrDefault<bool>(table, "AUTO_ADD_SRC");
+			set.RecSearchSrc = GetValueOrDefault<bool>(table, "RECURSE_SRC");
 
-        public static T GetValueOrDefault<T>(TomlTable table, string KeyName)
-        {
-            if (typeof(T) == typeof(List<string>))
-            {
-                if (table.ContainsKey(KeyName))
-                {
-                    var value = table[KeyName];
-                    return (T)(object)(from i in ((Tomlyn.Model.TomlArray)value) select i as string).ToList();
-                }
-                return default;
+			return set;
+		}
 
-            }
-            return table.ContainsKey(KeyName) ? (T)table[KeyName] : default;
-        }
-        public static Settings ParseConfigs(string global, string local)
-        {
+		public static T GetValueOrDefault<T>(TomlTable table, string KeyName)
+		{
+			if (typeof(T) == typeof(List<string>))
+			{
+				if (table.ContainsKey(KeyName))
+				{
+					var value = table[KeyName];
+					return (T) (object) (from i in (TomlArray) value select i as string).ToList();
+				}
 
-        }
-        public static Settings GetSettings(DirectoryInfo ProjectDir)
-        {
-            var global = File.ReadAllText(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-            var local = File.ReadAllText(ProjectDir.GetFiles().First(t => { return t.Name == "build.maple"; }).FullName);
+				return default;
+			}
 
-        }
-        
-    }
+			return table.ContainsKey(KeyName) ? (T) table[KeyName] : default;
+		}
 
-    
+		public static Settings ParseConfigs(string global, string local)
+		{
+			throw new NotImplementedException();
+		}
 
-    public class GlobalConfig
-    {
-        public GlobalConfig()
-        {
-            AutoAddSrc = true;
-            RecSearchSrc = true;
-        }
-        public bool AutoAddSrc { get; set; }
-        public bool RecSearchSrc { get; set; }
-    }
+		public static GlobalConfig GetGlobalConfig()
+		{
+			throw new NotImplementedException();
+		}
 
-    public class Target
-    {
-        public string TargetString { get; set; }
-        //TODO Implement later
-    }
+		public static Settings GetSettings(DirectoryInfo ProjectDir)
+		{
+			var global = File.ReadAllText(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
+			                              "/.config.maple");
+			var local = File.ReadAllText(ProjectDir.GetFiles().First(t => { return t.Name == "build.maple"; })
+				.FullName);
+			throw new NotImplementedException();
+		}
+	}
+
+
+	public class GlobalConfig
+	{
+		public GlobalConfig()
+		{
+			AutoAddSrc = true;
+			RecSearchSrc = true;
+		}
+
+		public bool AutoAddSrc { get; set; }
+		public bool RecSearchSrc { get; set; }
+	}
+
+	public class CurrentConfig : Settings
+	{
+	}
+
+	public class Target
+	{
+		public string TargetString { get; set; }
+		//TODO Implement later
+	}
 }
