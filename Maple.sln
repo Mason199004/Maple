@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maple", "Maple\Maple.csproj", "{A05E26AF-7807-4EC3-9D96-BFACEDCCAB20}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapleCore", "MapleCore\MapleCore.csproj", "{C145603C-E98C-4F9E-AB9E-3A6D091A23CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{A05E26AF-7807-4EC3-9D96-BFACEDCCAB20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A05E26AF-7807-4EC3-9D96-BFACEDCCAB20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A05E26AF-7807-4EC3-9D96-BFACEDCCAB20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C145603C-E98C-4F9E-AB9E-3A6D091A23CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C145603C-E98C-4F9E-AB9E-3A6D091A23CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C145603C-E98C-4F9E-AB9E-3A6D091A23CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C145603C-E98C-4F9E-AB9E-3A6D091A23CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
