@@ -1,4 +1,5 @@
 using System;
+using MapleCore.Tools;
 
 namespace MapleCore.Commands
 {
@@ -14,6 +15,7 @@ namespace MapleCore.Commands
                     switch (args[1])
                     {
                         case "add":
+                            CommandSrc.Add(FilePaths.Normalize(args[2]));
                             break;
                     }
 

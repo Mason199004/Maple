@@ -8,11 +8,19 @@ namespace MapleCore.Config
 	{
 		public static IGlobalConfig GetGlobalConfig()
 		{
+			if (!File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
+			                 "/.config.maple"))
+			{
+				WriteGlobal(new GlobalConfig() {AUTO_ADD_SRC = true, RECURSE_SRC = true, C_SRC_EXTENSIONS = new List<string>(new[] {"c"}), CXX_SRC_EXTENSIONS = new List<string>(new []{"cpp"})});
+			}
 			var toml = Toml.ReadFile(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
 			                         "/.config.maple");
 			var cfg = new GlobalConfig();
-			cfg.AutoAddSrc = toml["AUTO_ADD_SRC"].Get<bool>();
-			cfg.RecSearchSrc = toml["RECURSE_SRC"].Get<bool>();
+			
+			cfg.AUTO_ADD_SRC = toml["AUTO_ADD_SRC"].Get<bool>();
+			cfg.RECURSE_SRC = toml["RECURSE_SRC"].Get<bool>();
+			cfg.C_SRC_EXTENSIONS = toml["C_SRC_EXTENSIONS"].Get<List<string>>();
+			cfg.CXX_SRC_EXTENSIONS = toml["CXX_SRC_EXTENSIONS"].Get<List<string>>();
 			return cfg;
 		}
 
@@ -20,6 +28,7 @@ namespace MapleCore.Config
 		{
 			var cfg = new LocalConfig();
 			var toml = Toml.ReadFile(path);
+			toml = (TomlTable)toml["Maple"];
 			if (toml.ContainsKey("C_SRC")) cfg.CSrc = toml["C_SRC"].Get<List<string>>();
 			if (toml.ContainsKey("CXX_SRC")) cfg.CXXSrc = toml["CXX_SRC"].Get<List<string>>();
 			if (toml.ContainsKey("Dependencies")) cfg.Dependencies = toml["Dependencies"].Get<List<string>>();
@@ -40,8 +49,10 @@ namespace MapleCore.Config
 		public static void WriteGlobal(IGlobalConfig cfg)
 		{
 			var global = new GlobalConfig();
-			global.AutoAddSrc = cfg.AutoAddSrc;
-			global.RecSearchSrc = cfg.RecSearchSrc;
+			global.AUTO_ADD_SRC = cfg.AUTO_ADD_SRC;
+			global.RECURSE_SRC = cfg.RECURSE_SRC;
+			global.C_SRC_EXTENSIONS = cfg.C_SRC_EXTENSIONS;
+			global.CXX_SRC_EXTENSIONS = cfg.CXX_SRC_EXTENSIONS;
 			Toml.WriteFile(global, Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
 			                       "/.config.maple");
 		}

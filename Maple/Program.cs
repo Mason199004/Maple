@@ -25,8 +25,8 @@ namespace Maple
 
 		private static void Main(string[] args)
 		{
-			
-			MapleCore.Test.TestCfgSys();
+			MapleCore.Env.InitEnv();
+			MapleCore.Commands.CommandHandler.HandleCommand(args);
 			try
 			{
 				AddFiles();

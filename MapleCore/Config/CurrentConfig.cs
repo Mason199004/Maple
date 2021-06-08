@@ -5,8 +5,8 @@ namespace MapleCore.Config
 {
 	public class CurrentConfig : IGlobalConfig, ILocalConfig
 	{
-		public bool AutoAddSrc { get; set; }
-		public bool RecSearchSrc { get; set; }
+		public bool AUTO_ADD_SRC { get; set; }
+		public bool RECURSE_SRC { get; set; }
 		public List<string> C_SRC_EXTENSIONS { get; set; }
 		public List<string> CXX_SRC_EXTENSIONS { get; set; }
 		public string ProjectName { get; set; }
@@ -16,8 +16,10 @@ namespace MapleCore.Config
 
 		public void FromGlobal(IGlobalConfig cfg)
 		{
-			AutoAddSrc = cfg.AutoAddSrc;
-			RecSearchSrc = cfg.RecSearchSrc;
+			AUTO_ADD_SRC = cfg.AUTO_ADD_SRC;
+			RECURSE_SRC = cfg.RECURSE_SRC;
+			C_SRC_EXTENSIONS = cfg.C_SRC_EXTENSIONS;
+			CXX_SRC_EXTENSIONS = cfg.CXX_SRC_EXTENSIONS;
 		}
 
 		public void FromLocal(ILocalConfig cfg)
