@@ -9,6 +9,7 @@ namespace MapleCore
         public static DirectoryInfo ProjectDir;
         public static DirectoryInfo CallingDir;
         public static CurrentConfig Config;
+        public const string Version = "0.0.1";
 
         public static void InitEnv()
         {
