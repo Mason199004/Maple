@@ -14,8 +14,63 @@ namespace MapleCore.Config
 
 		public static void LoadGlobal()
 		{
-			var cfgloc = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "/.config.maple";
+			var appdat = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+			if (new DirectoryInfo(appdat).GetFiles(".config.maple").Length == 0)
+			{
+				GenerateGlobal();
+			}
+			var cfgloc = appdat + "/.config.maple";
 			Global = Nett.Toml.ReadFile(cfgloc);
+		}
+
+		public static void GenerateGlobal()
+		{
+			string cc = string.Empty;
+			string cpp = string.Empty;
+			var execpath = from f in Environment.GetEnvironmentVariable("PATH").Split(":")
+				select (new DirectoryInfo(f).Attributes & FileAttributes.Hidden) == 0 ? new DirectoryInfo(f).GetFiles() : new FileInfo[0]; //  :))
+			if (execpath.Any(t => t.Any(tt => tt.Name == "cc")))
+			{
+				cc = "cc";
+			}
+			else if (execpath.Any(t => t.Any(tt => tt.Name == "gcc")))
+			{
+				cc = "gcc";
+			}
+			else if (execpath.Any(t => t.Any(tt => tt.Name == "clang")))
+			{
+				cc = "clang";
+			}
+			if (execpath.Any(t => t.Any(tt => tt.Name == "c++")))
+			{
+				cpp = "c++";
+			}
+			else if (execpath.Any(t => t.Any(tt => tt.Name == "g++")))
+			{
+				cpp = "g++";
+			}
+			else if (execpath.Any(t => t.Any(tt => tt.Name == "clang++")))
+			{
+				cpp = "clang++";
+			}
+
+			if (cc == string.Empty)
+			{
+				Console.WriteLine("WARNING: Unable to locate C Compiler, please manually configure in config");
+			}
+
+			if (cpp == string.Empty)
+			{
+				Console.WriteLine("WARNING: Unable to locate C++ Compiler, please manually configure in config");
+			}
+
+			Global = Nett.Toml.Create(Config.Defaults);
+			Global.Update(ConfigurableSettings.C_Compiler, cc);
+			Global.Update(ConfigurableSettings.CXX_Compiler, cpp);
+			Global.Remove(ConfigurableSettings.C_Src);
+			Global.Remove(ConfigurableSettings.Cpp_Src);
+			Global.Remove(ConfigurableSettings.ProjectName);
+			WriteGlobal();
 		}
 
 		public static void LoadLocal()

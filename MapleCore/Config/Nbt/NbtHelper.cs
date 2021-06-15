@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 using fNbt;
 using fNbt.Tags;
@@ -26,12 +27,18 @@ namespace MapleCore.Config.Nbt
 			}
 			else
 			{
-				((NbtCompound)root["Files"]).Add(new NbtByteArray(hash));
+				((NbtCompound)root["Files"]).Add(new NbtByteArray(key, hash));
 			}
 		}
 
 		public void FromFile(string path)
 		{
+			if (!File.Exists(path))
+			{
+				var temp = new NbtCompound("root") {new NbtCompound("Files")};
+				new NbtFile(temp).SaveToFile(path, NbtCompression.GZip);
+			}
+
 			root = new NbtFile(path).RootTag;
 		}
 

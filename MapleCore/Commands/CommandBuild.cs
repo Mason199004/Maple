@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using MapleCore.Config;
 using MapleCore.Config.Nbt;
+using MapleCore.Tools;
 
 namespace MapleCore.Commands
 {
@@ -42,8 +43,8 @@ namespace MapleCore.Commands
 			p.StartInfo.FileName = ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.C_Compiler);
 			var files = from f in ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.C_Src)
 					.Concat(ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.Cpp_Src))
-				select "working/" + new FileInfo(f).Name + ".o";
-			p.StartInfo.Arguments += " " + string.Join(' ', files) + " -lstdc++ -o " +
+				select "working/" + new FileInfo(f).Name + ".o"; //  :)
+			p.StartInfo.Arguments += " " + string.Join(' ', files) + " -lstdc++ -o build/" +
 			                         ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.ProjectName);
 			p.Start();
 			p.WaitForExit();
@@ -90,16 +91,17 @@ namespace MapleCore.Commands
 			return changed;
 		}
 
-		public static bool BuildFile(string file)
+		public static bool BuildFile(string ffile)
 		{
-			var ex = new FileInfo(file).Extension[1..];
+			var ex = new FileInfo(ffile).Extension[1..];
+			var file = new FileInfo(ffile).Name;
 			if (ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.C_Ext)
 				.Contains(ex))
 			{
 				var p = new Process();
 				Console.WriteLine($"Building C Object {file}");
 				p.StartInfo.FileName = ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.C_Compiler);
-				p.StartInfo.Arguments += $"src/{file} ";
+				p.StartInfo.Arguments += $"{ffile} ";
 				p.StartInfo.Arguments += $"-c {ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.CCFlags)} -o working/{file}.o";
 				p.Start();
 				p.WaitForExit();
@@ -114,7 +116,7 @@ namespace MapleCore.Commands
 				Console.WriteLine($"Building CXX Object {file}");
 				var p = new Process();
 				p.StartInfo.FileName = ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.CXX_Compiler);
-				p.StartInfo.Arguments += $"src/{file} ";
+				p.StartInfo.Arguments += $"{ffile} ";
 				p.StartInfo.Arguments += $"-lstdc++ {ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.CXXCFlags)} -c -o working/{file}.o";
 				p.Start();
 				p.WaitForExit();
@@ -123,7 +125,7 @@ namespace MapleCore.Commands
 					return false;
 				}
 			}
-			nbt.UpdateFile(file, System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file)));
+			nbt.UpdateFile(ffile, System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(ffile)));
 			return true;
 		}
 	}

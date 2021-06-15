@@ -22,7 +22,7 @@ namespace MapleCore.Commands
                     break;
                 case "build":
                     Env.InitEnv();
-                    
+                    CommandBuild.Build();
                     break;
             }
         }
