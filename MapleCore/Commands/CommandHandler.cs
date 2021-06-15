@@ -12,13 +12,13 @@ namespace MapleCore.Commands
             {
                 case "src":
                     if (args.Length < 2) throw new ArgumentException("no subcommand passed to src");
+                    Env.InitEnv();
                     switch (args[1])
                     {
                         case "add":
                             CommandSrc.Add(FilePaths.Normalize(args[2]));
                             break;
                     }
-
                     break;
             }
         }

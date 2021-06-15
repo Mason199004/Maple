@@ -19,7 +19,7 @@ namespace MapleCore.Config
 				return (T)Config.Defaults[key];
 			}
 		}
-
+		//yes, i know, this looks weird and hacky, but for whatever reason you cant just add type object to a TomlTable without it shitting
 		public static void UpdateGlobal(string key, object value)
 		{
 			if (Config.Global.ContainsKey(key))

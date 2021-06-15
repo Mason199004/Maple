@@ -26,7 +26,7 @@ namespace Maple
 
 		private static void Main(string[] args)
 		{
-			Env.InitEnv();
+			
 			MapleCore.Commands.CommandHandler.HandleCommand(args);
 			return;
 			try
