@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="CoreFNBT" Version="1.0.9" />
       <PackageReference Include="Nett" Version="0.15.0" />
       <PackageReference Include="Option" Version="3.0.1" />
     </ItemGroup>

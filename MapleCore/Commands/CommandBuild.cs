@@ -1,0 +1,130 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using MapleCore.Config;
+using MapleCore.Config.Nbt;
+
+namespace MapleCore.Commands
+{
+	public class CommandBuild
+	{
+		public static NbtHelper nbt;
+		public static void Build()
+		{
+			nbt = new NbtHelper();
+			nbt.FromFile(Env.ProjectDir + "/working/maple.buildData");
+			if (!Check())
+			{
+				Console.WriteLine("Build failed");
+				return;
+			}
+
+			var toCompile = ChangedFiles();
+			bool fail = false;
+			foreach (var file in toCompile)
+			{
+				if (!BuildFile(file))
+				{
+					fail = true;
+				}
+			}
+
+			if (fail)
+			{
+				Console.WriteLine("Error: Build failed");
+				return;
+			}
+			
+			var p = new Process();
+			
+			p.StartInfo.FileName = ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.C_Compiler);
+			var files = from f in ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.C_Src)
+					.Concat(ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.Cpp_Src))
+				select "working/" + new FileInfo(f).Name + ".o";
+			p.StartInfo.Arguments += " " + string.Join(' ', files) + " -lstdc++ -o " +
+			                         ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.ProjectName);
+			p.Start();
+			p.WaitForExit();
+			if (p.ExitCode != 0)
+			{
+				Console.WriteLine("Error: Build failed");
+			}
+			
+		}
+
+		public static bool Check()
+		{
+			bool fail = false;
+			if (ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.C_Src).Count > 0 && 
+			    ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.C_Compiler) == string.Empty)
+			{
+				Console.Error.Write("FATAL: Cannot possibly build project without a C compiler");
+				fail = true;
+			}
+
+			if (ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.Cpp_Src).Count > 0 &&
+			    ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.CXX_Compiler) == string.Empty)
+			{
+				Console.Error.Write("FATAL: Cannot possibly build project without a C++ compiler");
+				fail = true;
+			}
+
+			return !fail;
+		}
+
+		public static IEnumerable<string> ChangedFiles()
+		{
+			var changed = new List<string>();
+			var files = ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.C_Src)
+				.Concat(ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.Cpp_Src));
+			foreach (var file in files)
+			{
+				if (!nbt.CompareHash(file, System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file))))
+				{
+					changed.Add(file);
+				}
+			}
+
+			return changed;
+		}
+
+		public static bool BuildFile(string file)
+		{
+			var ex = new FileInfo(file).Extension[1..];
+			if (ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.C_Ext)
+				.Contains(ex))
+			{
+				var p = new Process();
+				Console.WriteLine($"Building C Object {file}");
+				p.StartInfo.FileName = ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.C_Compiler);
+				p.StartInfo.Arguments += $"src/{file} ";
+				p.StartInfo.Arguments += $"-c {ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.CCFlags)} -o working/{file}.o";
+				p.Start();
+				p.WaitForExit();
+				if (p.ExitCode != 0)
+				{
+					return false;
+				}
+			}
+			else if (ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.Cpp_Ext)
+				.Contains(ex))
+			{
+				Console.WriteLine($"Building CXX Object {file}");
+				var p = new Process();
+				p.StartInfo.FileName = ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.CXX_Compiler);
+				p.StartInfo.Arguments += $"src/{file} ";
+				p.StartInfo.Arguments += $"-lstdc++ {ConfigSystem.Get<string>(Config.Config.ConfigurableSettings.CXXCFlags)} -c -o working/{file}.o";
+				p.Start();
+				p.WaitForExit();
+				if (p.ExitCode != 0)
+				{
+					return false;
+				}
+			}
+			nbt.UpdateFile(file, System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file)));
+			return true;
+		}
+	}
+}

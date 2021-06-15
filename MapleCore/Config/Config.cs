@@ -43,12 +43,17 @@ namespace MapleCore.Config
 
 		public class ConfigurableSettings
 		{
+			public const string ProjectName = "ProjectName";
 			public const string AutoSrc = "AUTO_ADD_SRC";
 			public const string RecurseSrc = "RECURSE_SRC";
 			public const string C_Ext = "C_EXTENSIONS";
 			public const string Cpp_Ext = "CXX_EXTENSIONS";
 			public const string C_Src = "CSrc";
 			public const string Cpp_Src = "CXXSrc";
+			public const string C_Compiler = "CC";
+			public const string CXX_Compiler = "CXXC";
+			public const string CCFlags = "CCFlags";
+			public const string CXXCFlags = "CXXCFlags";
 		}
 
 		
@@ -61,6 +66,11 @@ namespace MapleCore.Config
 			{ConfigurableSettings.Cpp_Ext, new List<string> {"cpp"}},
 			{ConfigurableSettings.C_Src, new List<string> {""}},
 			{ConfigurableSettings.Cpp_Src, new List<string> {""}},
+			{ConfigurableSettings.C_Compiler, string.Empty},
+			{ConfigurableSettings.CXX_Compiler, string.Empty},
+			{ConfigurableSettings.CCFlags, string.Empty},
+			{ConfigurableSettings.CXXCFlags, string.Empty},
+			{ConfigurableSettings.ProjectName, string.Empty}
 		};
 	}
 }

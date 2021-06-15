@@ -20,6 +20,10 @@ namespace MapleCore.Commands
                             break;
                     }
                     break;
+                case "build":
+                    Env.InitEnv();
+                    
+                    break;
             }
         }
     }
