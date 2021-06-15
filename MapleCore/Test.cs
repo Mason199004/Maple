@@ -1,3 +1,4 @@
+using System;
 using MapleCore.Config;
 using Nett;
 
@@ -7,11 +8,9 @@ namespace MapleCore
 	{
 		public static void TestCfgSys()
 		{
-			var cfg = new Config.CurrentConfig();
-			cfg.ProjectName = "text";
-			Toml.WriteFile((IGlobalConfig)cfg, "test.toml");
-			Toml.WriteFile(cfg, "test2.toml");
-			ConfigSystem.WriteGlobal(cfg);
+			Env.InitEnv();
+			Console.WriteLine(ConfigSystem.Get<bool>("AUTO_ADD_SRC"));
+			
 		}
 	}
 }

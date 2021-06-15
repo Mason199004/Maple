@@ -7,11 +7,34 @@ using System.Text;
 
 namespace MapleCore.Config.Toml
 {
-	class TomlHelper
+	public class TomlHelper
 	{
 		private TomlTable root = Nett.Toml.Create();
-		
-		
+
+		public T? Get<T>(string key)
+		{
+			if (root.ContainsKey(key))
+			{
+				return root.Get<T>(key);
+			}
+
+			return (T)(object?)null;
+		}
+
+		public void Import(TomlTable from)
+		{
+			foreach (var pair in from)
+			{
+				if (root.ContainsKey(pair.Key))
+				{
+					root[pair.Key] = pair.Value;
+				}
+				else
+				{
+					root.Add(pair.Key, pair.Value);
+				}
+			}
+		}
 		
 	}
 }

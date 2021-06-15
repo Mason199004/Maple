@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using MapleCore.Config;
 using MapleCore.Interaction;
@@ -10,47 +11,53 @@ namespace MapleCore.Commands
         public static void Add(string file)
         {
             var f = new FileInfo(file);
-            if (Env.Config.C_SRC_EXTENSIONS.Contains(f.Extension))
+            
+            if (ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.C_Ext)
+                .Contains(f.Extension[1..]))
             {
-                Env.Config.CSrc.ValueOrDefault.Add(file);
+                var temp = ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.C_Src);
+                if (temp.Contains(file))
+                    return;
+                temp.Add(file);
+                ConfigSystem.UpdateLocal(Config.Config.ConfigurableSettings.C_Src, temp);
             }
-            else if (Env.Config.CXX_SRC_EXTENSIONS.Contains(f.Extension))
+            else if (ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.Cpp_Ext)
+                .Contains(f.Extension[1..]))
             {
-                Env.Config.CXXSrc.ValueOrDefault.Add(file);
+                var temp = ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.Cpp_Src);
+                if (temp.Contains(file))
+                    return;
+                temp.Add(file);
+                ConfigSystem.UpdateLocal(Config.Config.ConfigurableSettings.Cpp_Src, temp);
             }
             else
             {
-                bop:
-                var type = UserInteract.PromptUser("Could not determine source type from extension, what type of source file is this?", new[] {"C", "CXX"});
-                if (type.ToLower() != "c" && type.ToLower() != "cxx")
+                var type = UserInteract.PromptUser("Error: Unknown Extension, what is source file type? (c,cxx): ", new List<string>() {"c", "cxx"});
+                var willsave = UserInteract.PromptUser("Would you like to save this preference? (y,n): ",
+                    new List<string>() {"y", "n"});
+                if (willsave.ToLower() == "y")
                 {
-                    Console.WriteLine("Invalid response!");
-                    goto bop;
-                }
-                
-                if (UserInteract.PromptUser("Would you like to save this preference?", new[] {"y", "n"}).ToLower() ==
-                    "y")
-                {
-                    if (type.ToLower() == "c")
-                    {
-                        Env.Config.C_SRC_EXTENSIONS.Add(f.Extension);
-                    }
-                    else
-                    {
-                        Env.Config.CXX_SRC_EXTENSIONS.Add(f.Extension);
-                    }
-                    ConfigSystem.WriteGlobal(Env.Config);
+                    var temp = ConfigSystem.Get<List<string>>(type.ToLower() == "c"
+                        ? Config.Config.ConfigurableSettings.C_Ext
+                        : Config.Config.ConfigurableSettings.Cpp_Ext);
+                    temp.Add(f.Extension[1..]);
+                    ConfigSystem.UpdateLocal(type.ToLower() == "c" ? Config.Config.ConfigurableSettings.C_Ext : Config.Config.ConfigurableSettings.Cpp_Ext, temp);
                 }
 
                 if (type.ToLower() == "c")
                 {
-                    Env.Config.CSrc.ValueOrDefault.Add(file);
+                    var temp = ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.C_Src);
+                    temp.Add(file);
+                    ConfigSystem.UpdateLocal(Config.Config.ConfigurableSettings.C_Src, temp);
                 }
                 else
                 {
-                    Env.Config.CXXSrc.ValueOrDefault.Add(file);
+                    var temp = ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.Cpp_Src);
+                    temp.Add(file);
+                    ConfigSystem.UpdateLocal(Config.Config.ConfigurableSettings.Cpp_Src, (IEnumerable<string>)temp);
                 }
             }
+            
         }
     }
 }

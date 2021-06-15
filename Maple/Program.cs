@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using MapleCore;
 
 namespace Maple
 {
@@ -25,8 +26,9 @@ namespace Maple
 
 		private static void Main(string[] args)
 		{
-			MapleCore.Env.InitEnv();
+			Env.InitEnv();
 			MapleCore.Commands.CommandHandler.HandleCommand(args);
+			return;
 			try
 			{
 				AddFiles();
