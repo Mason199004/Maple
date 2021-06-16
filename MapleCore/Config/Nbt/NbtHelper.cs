@@ -23,7 +23,7 @@ namespace MapleCore.Config.Nbt
 		{
 			if (((NbtCompound) root["Files"]).Contains(key))
 			{
-				root["Files"][key] = new NbtByteArray(hash);
+				root["Files"][key] = new NbtByteArray(key, hash);
 			}
 			else
 			{

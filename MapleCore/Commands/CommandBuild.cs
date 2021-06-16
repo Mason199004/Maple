@@ -52,6 +52,11 @@ namespace MapleCore.Commands
 			{
 				Console.WriteLine("Error: Build failed");
 			}
+			else
+			{
+				Console.WriteLine("Build Succeeded");
+			}
+			nbt.ToFile(Env.ProjectDir + "/working/maple.buildData");
 			
 		}
 
