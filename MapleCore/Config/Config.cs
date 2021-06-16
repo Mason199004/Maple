@@ -27,29 +27,40 @@ namespace MapleCore.Config
 		{
 			string cc = string.Empty;
 			string cpp = string.Empty;
-			var execpath = from f in Environment.GetEnvironmentVariable("PATH").Split(":")
-				select (new DirectoryInfo(f).Attributes & FileAttributes.Hidden) == 0 ? new DirectoryInfo(f).GetFiles() : new FileInfo[0]; //  :))
-			if (execpath.Any(t => t.Any(tt => tt.Name == "cc")))
+			IEnumerable<FileInfo[]> execpath = default;
+			if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+			{
+				execpath = from f in Environment.GetEnvironmentVariable("PATH").Split(';')
+						.Where(t => Directory.Exists(t))
+					select new DirectoryInfo(f).GetFiles();
+			}
+			else
+			{
+				execpath = from f in Environment.GetEnvironmentVariable("PATH").Split(':')
+						.Where(t => Directory.Exists(t))
+					select new DirectoryInfo(f).GetFiles();
+			}
+			if (execpath.Any(t => t.Any(tt => tt.Name is "cc" or "cc.exe")))
 			{
 				cc = "cc";
 			}
-			else if (execpath.Any(t => t.Any(tt => tt.Name == "gcc")))
+			else if (execpath.Any(t => t.Any(tt => tt.Name is "gcc" or "gcc.exe")))
 			{
 				cc = "gcc";
 			}
-			else if (execpath.Any(t => t.Any(tt => tt.Name == "clang")))
+			else if (execpath.Any(t => t.Any(tt => tt.Name is "clang" or "clang.exe")))
 			{
 				cc = "clang";
 			}
-			if (execpath.Any(t => t.Any(tt => tt.Name == "c++")))
+			if (execpath.Any(t => t.Any(tt => tt.Name is "c++" or "c++.exe")))
 			{
 				cpp = "c++";
 			}
-			else if (execpath.Any(t => t.Any(tt => tt.Name == "g++")))
+			else if (execpath.Any(t => t.Any(tt => tt.Name is "g++" or "g++.exe")))
 			{
 				cpp = "g++";
 			}
-			else if (execpath.Any(t => t.Any(tt => tt.Name == "clang++")))
+			else if (execpath.Any(t => t.Any(tt => tt.Name is "clang++" or "clang++.exe")))
 			{
 				cpp = "clang++";
 			}
@@ -119,8 +130,8 @@ namespace MapleCore.Config
 			{ConfigurableSettings.RecurseSrc, true},
 			{ConfigurableSettings.C_Ext, new List<string> {"c"}},
 			{ConfigurableSettings.Cpp_Ext, new List<string> {"cpp"}},
-			{ConfigurableSettings.C_Src, new List<string> {""}},
-			{ConfigurableSettings.Cpp_Src, new List<string> {""}},
+			{ConfigurableSettings.C_Src, new List<string> {}},
+			{ConfigurableSettings.Cpp_Src, new List<string> {}},
 			{ConfigurableSettings.C_Compiler, string.Empty},
 			{ConfigurableSettings.CXX_Compiler, string.Empty},
 			{ConfigurableSettings.CCFlags, string.Empty},

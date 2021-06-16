@@ -7,7 +7,9 @@ namespace MapleCore.Tools
 	{
 		public static string Normalize(string PathOrFile)
 		{
-			return Path.GetRelativePath(Env.ProjectDir.FullName, new FileInfo(PathOrFile).FullName);
+			var path = Path.GetRelativePath(Env.ProjectDir.FullName, new FileInfo(PathOrFile).FullName);
+			if (Environment.OSVersion.Platform == PlatformID.Win32NT) return path.Replace("\\", "/");
+			return path;
 		}
 	}
 }

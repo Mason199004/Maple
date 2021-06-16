@@ -23,6 +23,10 @@ namespace MapleCore.Config.Toml
 
 		public void Import(TomlTable from)
 		{
+			if (from is null)
+			{
+				return;
+			}
 			foreach (var pair in from)
 			{
 				if (root.ContainsKey(pair.Key))

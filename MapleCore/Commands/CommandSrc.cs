@@ -32,8 +32,8 @@ namespace MapleCore.Commands
             }
             else
             {
-                var type = UserInteract.PromptUser("Error: Unknown Extension, what is source file type? (c,cxx): ", new List<string>() {"c", "cxx"});
-                var willsave = UserInteract.PromptUser("Would you like to save this preference? (y,n): ",
+                var type = UserInteract.PromptUser("Error: Unknown Extension, what is source file type?", new List<string>() {"c", "cxx"});
+                var willsave = UserInteract.PromptUser("Would you like to save this preference?",
                     new List<string>() {"y", "n"});
                 if (willsave.ToLower() == "y")
                 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using MapleCore.Config;
 using MapleCore.Config.Nbt;
 using MapleCore.Tools;
@@ -15,7 +16,7 @@ namespace MapleCore.Commands
 		public static void Build()
 		{
 			nbt = new NbtHelper();
-			nbt.FromFile(Env.ProjectDir + "/working/maple.buildData");
+			nbt.FromFile(Env.ProjectDir + $"/working/maple.buildData");
 			if (!Check())
 			{
 				Console.WriteLine("Build failed");
@@ -87,7 +88,7 @@ namespace MapleCore.Commands
 				.Concat(ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.Cpp_Src));
 			foreach (var file in files)
 			{
-				if (!nbt.CompareHash(file, System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file))))
+				if (!nbt.CompareHash(file, System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(Environment.OSVersion.VersionString + File.ReadAllText(file)))))
 				{
 					changed.Add(file);
 				}
@@ -130,7 +131,7 @@ namespace MapleCore.Commands
 					return false;
 				}
 			}
-			nbt.UpdateFile(ffile, System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(ffile)));
+			nbt.UpdateFile(ffile, System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(Environment.OSVersion.VersionString + File.ReadAllText(ffile))));
 			return true;
 		}
 	}

@@ -1,0 +1,57 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v3.1",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v3.1": {
+      "MapleCore/1.0.0": {
+        "dependencies": {
+          "Nett": "0.15.0",
+          "Option": "3.0.1"
+        },
+        "runtime": {
+          "MapleCore.dll": {}
+        }
+      },
+      "Nett/0.15.0": {
+        "runtime": {
+          "lib/netstandard2.0/Nett.dll": {
+            "assemblyVersion": "0.15.0.0",
+            "fileVersion": "0.15.0.0"
+          }
+        }
+      },
+      "Option/3.0.1": {
+        "runtime": {
+          "lib/Net35/Option.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "MapleCore/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Nett/0.15.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/0SoN9ugPKfmLndtKy3gaRxOlzji94/yrNgQLe45/1ZgExj0BaVozbXD+oWD8E6MCLvTs+YWzmn315mQOXGCcw==",
+      "path": "nett/0.15.0",
+      "hashPath": "nett.0.15.0.nupkg.sha512"
+    },
+    "Option/3.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-p13cj/MImmrMNm7p7SOfW4uduPNGXgucY4JtfdU7JDxb3HRsp41PpqHJDltxA/FqNEjjqFVEHlrpGgMbLx47ew==",
+      "path": "option/3.0.1",
+      "hashPath": "option.3.0.1.nupkg.sha512"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using MapleCore.Config;
 using MapleCore.Config.Toml;
 
@@ -15,16 +16,35 @@ namespace MapleCore
         public static void InitEnv()
         {
             CallingDir = new DirectoryInfo(Environment.CurrentDirectory);
-            //TODO: implement finding of project file from non calling dir
-            ProjectDir = CallingDir;
-            var proj = ProjectDir.GetFiles("build.maple");
-            if (proj.Length == 0) throw new FileNotFoundException("Project file does not exist");
+            var inproj = BringToProject();
             Config = new TomlHelper();
             MapleCore.Config.Config.LoadGlobal();
-            MapleCore.Config.Config.LoadLocal();
             Config.Import(MapleCore.Config.Config.Global);
-            Config.Import(MapleCore.Config.Config.Local);
+            if (inproj)
+            {
+                MapleCore.Config.Config.LoadLocal();
+                Config.Import(MapleCore.Config.Config.Local);
+            }
             
+            
+        }
+
+        public static bool BringToProject()
+        {
+            start:
+            if (File.Exists("build.maple"))
+            {
+                ProjectDir = new DirectoryInfo(Environment.CurrentDirectory);
+                return true;
+            }
+            if (new DirectoryInfo(Environment.CurrentDirectory).Parent == null)
+            {
+                ProjectDir = null;
+                Directory.SetCurrentDirectory(CallingDir.FullName);
+                return false;
+            }
+            Directory.SetCurrentDirectory(new DirectoryInfo(Environment.CurrentDirectory).Parent.FullName);
+            goto start;
         }
     }
 }
