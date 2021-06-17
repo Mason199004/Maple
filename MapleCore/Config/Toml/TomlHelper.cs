@@ -11,6 +11,12 @@ namespace MapleCore.Config.Toml
 	{
 		private TomlTable root = Nett.Toml.Create();
 
+
+		public void Clear()
+		{
+			root.Clear();
+		}
+		
 		public T? Get<T>(string key)
 		{
 			if (root.ContainsKey(key))

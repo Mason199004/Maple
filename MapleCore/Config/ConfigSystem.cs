@@ -35,6 +35,9 @@ namespace MapleCore.Config
 				Config.Global = Nett.Toml.Create(temp);
 			}
 			Config.WriteGlobal();
+			Env.Config.Clear();
+			Env.Config.Import(Config.Global);
+			Env.Config.Import(Config.Local);
 		}
 		public static void UpdateLocal(string key, object value)
 		{
@@ -51,6 +54,9 @@ namespace MapleCore.Config
 				Config.Local = Nett.Toml.Create(temp);
 			}
 			Config.WriteLocal();
+			Env.Config.Clear();
+			Env.Config.Import(Config.Global);
+			Env.Config.Import(Config.Local);
 		}
 	}
 }

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using MapleCore.Config;
 using MapleCore.Config.Nbt;
 using MapleCore.Tools;
@@ -17,12 +18,13 @@ namespace MapleCore.Commands
 		{
 			nbt = new NbtHelper();
 			nbt.FromFile(Env.ProjectDir + $"/working/maple.buildData");
+			if (ConfigSystem.Get<bool>(Config.Config.ConfigurableSettings.AutoSrc)) DiscoverAndAddSrcFiles();
 			if (!Check())
 			{
 				Console.WriteLine("Build failed");
 				return;
 			}
-
+			
 			var toCompile = ChangedFiles();
 			bool fail = false;
 			foreach (var file in toCompile)
@@ -36,6 +38,7 @@ namespace MapleCore.Commands
 			if (fail)
 			{
 				Console.WriteLine("Error: Build failed");
+				nbt.ToFile(Env.ProjectDir + "/working/maple.buildData");
 				return;
 			}
 			
@@ -133,6 +136,16 @@ namespace MapleCore.Commands
 			}
 			nbt.UpdateFile(ffile, System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(Environment.OSVersion.VersionString + File.ReadAllText(ffile))));
 			return true;
+		}
+
+		public static void DiscoverAndAddSrcFiles()
+		{
+			var creg = new Regex($"([a-zA-Z0-9\\s_\\\\.\\-\\(\\):])+(\\.{string.Join("|\\.",ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.C_Ext))})$");
+			var csrc = new DirectoryInfo("src").GetFiles("*.*", ConfigSystem.Get<bool>(Config.Config.ConfigurableSettings.RecurseSrc) ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Where(t => creg.IsMatch(t.Name));
+			var cppreg = new Regex($"([a-zA-Z0-9\\s_\\\\.\\-\\(\\):])+(\\.{string.Join("|\\.",ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.Cpp_Ext))})$");
+			var cppsrc = new DirectoryInfo("src").GetFiles("*.*",ConfigSystem.Get<bool>(Config.Config.ConfigurableSettings.RecurseSrc) ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Where(t => cppreg.IsMatch(t.Name));
+			ConfigSystem.UpdateLocal(Config.Config.ConfigurableSettings.C_Src, (from f in csrc select FilePaths.Normalize(f.FullName)).ToList());
+			ConfigSystem.UpdateLocal(Config.Config.ConfigurableSettings.Cpp_Src, (from f in cppsrc select FilePaths.Normalize(f.FullName)).ToList());
 		}
 	}
 }
