@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using MapleCore.Config;
 using MapleCore.Config.Nbt;
 using MapleCore.Tools;
@@ -27,13 +28,14 @@ namespace MapleCore.Commands
 			
 			var toCompile = ChangedFiles();
 			bool fail = false;
-			foreach (var file in toCompile)
+			Parallel.ForEach(toCompile, file =>
 			{
 				if (!BuildFile(file))
 				{
 					fail = true;
 				}
-			}
+			});
+			
 
 			if (fail)
 			{
