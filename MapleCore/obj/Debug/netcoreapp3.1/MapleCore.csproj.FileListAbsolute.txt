@@ -1,9 +1,0 @@
-C:\Users\Mason\RiderProjects\Maple\MapleCore\bin\Debug\netcoreapp3.1\MapleCore.deps.json
-C:\Users\Mason\RiderProjects\Maple\MapleCore\bin\Debug\netcoreapp3.1\MapleCore.dll
-C:\Users\Mason\RiderProjects\Maple\MapleCore\bin\Debug\netcoreapp3.1\MapleCore.pdb
-C:\Users\Mason\RiderProjects\Maple\MapleCore\obj\Debug\netcoreapp3.1\MapleCore.csprojAssemblyReference.cache
-C:\Users\Mason\RiderProjects\Maple\MapleCore\obj\Debug\netcoreapp3.1\MapleCore.AssemblyInfoInputs.cache
-C:\Users\Mason\RiderProjects\Maple\MapleCore\obj\Debug\netcoreapp3.1\MapleCore.AssemblyInfo.cs
-C:\Users\Mason\RiderProjects\Maple\MapleCore\obj\Debug\netcoreapp3.1\MapleCore.csproj.CoreCompileInputs.cache
-C:\Users\Mason\RiderProjects\Maple\MapleCore\obj\Debug\netcoreapp3.1\MapleCore.dll
-C:\Users\Mason\RiderProjects\Maple\MapleCore\obj\Debug\netcoreapp3.1\MapleCore.pdb
