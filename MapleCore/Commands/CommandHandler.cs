@@ -21,7 +21,7 @@ namespace MapleCore.Commands
                     }
                     break;
                 case "build":
-                    CommandBuild.Build();
+                    //CommandBuild.Build();
                     break;
                 case "project":
                 case "proj":

@@ -32,8 +32,8 @@ namespace MapleCore.Config.Nbt
 					new NbtList("CXX_EXT", NbtTagType.String) {new NbtString("cxx")},
 					new NbtList("CC_FLAGS", NbtTagType.String),
 					new NbtList("CXXC_FLAGS", NbtTagType.String),
-					new NbtString("CC"),
-					new NbtString("CXXC"),
+					new NbtString("CC", String.Empty),
+					new NbtString("CXXC", String.Empty),
 				},
 			};
 			switch (type)
@@ -43,7 +43,7 @@ namespace MapleCore.Config.Nbt
 					{
 						new NbtList("C_SRC", NbtTagType.String),
 						new NbtList("CXX_SRC", NbtTagType.String),
-						new NbtString("PROJECT_NAME")
+						new NbtString("PROJECT_NAME", String.Empty)
 					});
 					break;
 				case CfgType.GLOBAL:

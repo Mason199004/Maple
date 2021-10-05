@@ -14,6 +14,7 @@ namespace MapleCore.Commands
 {
 	public class CommandBuild
 	{
+		/*
 		public static NbtHelper nbt;
 		public static void Build()
 		{
@@ -148,6 +149,6 @@ namespace MapleCore.Commands
 			var cppsrc = new DirectoryInfo("src").GetFiles("*.*",ConfigSystem.Get<bool>(Config.Config.ConfigurableSettings.RecurseSrc) ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Where(t => cppreg.IsMatch(t.Name));
 			ConfigSystem.UpdateLocal(Config.Config.ConfigurableSettings.C_Src, (from f in csrc select FilePaths.Normalize(f.FullName)).ToList());
 			ConfigSystem.UpdateLocal(Config.Config.ConfigurableSettings.Cpp_Src, (from f in cppsrc select FilePaths.Normalize(f.FullName)).ToList());
-		}
+		}*/
 	}
 }

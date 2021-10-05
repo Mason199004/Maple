@@ -27,7 +27,8 @@ namespace Maple
 		private static void Main(string[] args)
 		{
 			
-			MapleCore.Commands.CommandHandler.HandleCommand(args);
+			//MapleCore.Commands.CommandHandler.HandleCommand(args);
+			MapleCore.Test.TestCfgSys();
 			return;
 			try
 			{

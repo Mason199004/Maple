@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using fNbt;
 using fNbt.Tags;
@@ -15,15 +16,21 @@ namespace MapleCore.Config
 
 		private NbtCfg BackingConfig;
 
-		private ConcurrentQueue<NbtTag> UpdateQueue = new();
+		public ConcurrentQueue<NbtTag> UpdateQueue = new();
 
-		async Task UpdateLoop()
+		private Mutex Mut = new();
+
+		public async Task UpdateLoop()
 		{
+			BackingConfig = new NbtCfg(NbtCfg.CfgType.LOCAL);
 			while (true)
 			{
 				await Task.Delay(25);
+				Mut.WaitOne();
+				
 				if (UpdateQueue.IsEmpty)
 				{
+					Mut.ReleaseMutex();
 					continue;
 				}
 
@@ -45,6 +52,7 @@ namespace MapleCore.Config
 				{
 					RecursiveUpdate(temp as NbtCompound, ref BackingConfig.root);
 				}
+				Mut.ReleaseMutex();
 			}
 		}
 

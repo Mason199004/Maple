@@ -10,6 +10,7 @@ namespace MapleCore.Commands
     {
         public static void Add(string file)
         {
+            /*
             var f = new FileInfo(file);
             
             if (ConfigSystem.Get<List<string>>(Config.Config.ConfigurableSettings.C_Ext)
@@ -56,7 +57,7 @@ namespace MapleCore.Commands
                     temp.Add(file);
                     ConfigSystem.UpdateLocal(Config.Config.ConfigurableSettings.Cpp_Src, (IEnumerable<string>)temp);
                 }
-            }
+            }*/
             
         }
     }
