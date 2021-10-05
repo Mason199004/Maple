@@ -1,62 +1,85 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
+using fNbt;
+using fNbt.Tags;
+using MapleCore.Config.Nbt;
 using Nett;
 
 namespace MapleCore.Config
 {
 	class ConfigSystem
 	{
-		public static T Get<T>(string key)
+
+		private NbtCfg BackingConfig;
+
+		private ConcurrentQueue<NbtTag> UpdateQueue = new();
+
+		async Task UpdateLoop()
 		{
-			var got = Env.Config.Get<T>(key);
-			if (got is not null)
+			while (true)
 			{
-				return got;
-			}
-			else
-			{
-				return (T)Config.Defaults[key];
+				await Task.Delay(25);
+				if (UpdateQueue.IsEmpty)
+				{
+					continue;
+				}
+
+				UpdateQueue.TryDequeue(out var temp);
+
+				if (temp.TagType != NbtTagType.Compound)
+				{
+					if (BackingConfig.root.Contains(temp.Name))
+					{
+						BackingConfig.root.Remove(temp);
+						BackingConfig.root.Add(temp);
+					}
+					else
+					{
+						BackingConfig.root.Add(temp);
+					}
+				}
+				else
+				{
+					RecursiveUpdate(temp as NbtCompound, ref BackingConfig.root);
+				}
 			}
 		}
-		//yes, i know, this looks weird and hacky, but for whatever reason you cant just add type object to a TomlTable without it shitting
-		public static void UpdateGlobal(string key, object value)
+
+		static void RecursiveUpdate(NbtCompound from, ref NbtCompound to)
 		{
-			if (Config.Global.ContainsKey(key))
+			if (from.Name != to.Name)
+				return;
+
+			foreach (var tag in from)
 			{
-				var temp = Config.Global.ToDictionary();
-				temp[key] = value;
-				Config.Global = Nett.Toml.Create(temp);
+				if (tag.TagType != NbtTagType.Compound)
+				{
+					if (to.Contains(tag.Name))
+					{
+						to.Remove(tag);
+						to.Add(tag);
+					}
+					else
+					{
+						to.Add(tag);
+					}
+				}
+				else
+				{
+					if (to.Contains(tag.Name))
+					{
+						var t = from[tag.Name] as NbtCompound;
+						RecursiveUpdate(tag as NbtCompound, ref t);
+					}
+					else
+					{
+						to.Add(tag);
+					}
+				}
 			}
-			else
-			{
-				var temp = Config.Global.ToDictionary();
-				temp.Add(key, value);
-				Config.Global = Nett.Toml.Create(temp);
-			}
-			Config.WriteGlobal();
-			Env.Config.Clear();
-			Env.Config.Import(Config.Global);
-			Env.Config.Import(Config.Local);
-		}
-		public static void UpdateLocal(string key, object value)
-		{
-			if (Config.Local.ContainsKey(key))
-			{
-				var temp = Config.Local.ToDictionary();
-				temp[key] = value;
-				Config.Local = Nett.Toml.Create(temp);
-			}
-			else
-			{
-				var temp = Config.Local.ToDictionary();
-				temp.Add(key, value);
-				Config.Local = Nett.Toml.Create(temp);
-			}
-			Config.WriteLocal();
-			Env.Config.Clear();
-			Env.Config.Import(Config.Global);
-			Env.Config.Import(Config.Local);
 		}
 	}
 }
