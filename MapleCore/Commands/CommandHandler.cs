@@ -1,5 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using MapleCore.Tools;
+using Newtonsoft.Json;
 
 namespace MapleCore.Commands
 {
@@ -7,32 +13,105 @@ namespace MapleCore.Commands
     {
         public static void HandleCommand(string[] args)
         {
-            Env.InitEnv(); //always do this, its just a good thing
-            if (args.Length == 0) throw new ArgumentException("Unable to handle null command");
-            switch (args[0])
+            Stack<string> ArgStack = new();
+            for (var i = args.Length - 1; i >= 0; i--)
             {
-                case "src":
-                    if (args.Length < 2) throw new ArgumentException("no subcommand passed to src");
-                    switch (args[1])
-                    {
-                        case "add":
-                            CommandSrc.Add(FilePaths.Normalize( Env.CallingDir.FullName + "/" + args[2]));
-                            break;
-                    }
-                    break;
-                case "build":
-                    //CommandBuild.Build();
-                    break;
-                case "project":
-                case "proj":
-                    switch (args[1])
-                    {
-                        case "new":
-                            CommandProject.NewProject(args[2]);
-                            break;
-                    }
-                    break;
+                ArgStack.Push(args[i]);
             }
+
+            var t = new ExecutionContext();
+            t.Command = new Command();
+            t.Command.Args = new();
+            t.Options = new();
+            ProcessArgs(ArgStack, t);
+            Console.WriteLine(JsonConvert.SerializeObject(t, Formatting.Indented));
+
         }
+
+        public static ExecutionContext ProcessArgs(Stack<string> ArgStack, ExecutionContext Context)
+        {
+            var top = ArgStack.Pop();
+            PrimaryCommand.TryParse(top, out PrimaryCommand primaryCommand);
+            Context.Command.Primary = primaryCommand;
+            Context = SetArgs(ArgStack, Context);
+            Context = SetOptions(ArgStack, Context);
+            return Context;
+        }
+
+        private static ExecutionContext SetOptions(Stack<string> argStack, ExecutionContext context)
+        {
+            if (argStack.Count == 0)
+            {
+                return context;
+            }
+
+            var singles = argStack.Where(t => !t.StartsWith("--")).Where(t => t.StartsWith('-'));
+            foreach (var single in singles)
+            {
+                foreach (var c in single[1..].ToCharArray())
+                {
+                    if (SingleToFullMap.Map.ContainsKey(c))
+                    {
+                        context.Options.Add(SingleToFullMap.Map[c]);
+                    }
+                }
+            }
+
+            return context;
+        }
+
+        public static ExecutionContext SetArgs(Stack<string> ArgStack, ExecutionContext Context)
+        {
+            if (ArgStack.Count == 0)
+            {
+                return Context;
+            }
+
+            while (!ArgStack.Peek().StartsWith('-'))
+            {
+                Context.Command.Args.Add(ArgStack.Pop());
+            }
+
+            return Context;
+        }
+    }
+
+    public class ExecutionContext
+    {
+        public FileInfo Project { get; set; }
+        
+        public Command Command { get; set; }
+        
+        public List<Option> Options { get; set; }
+        
+        public Dictionary<string, string> Overrides { get; set; }
+    }
+
+    public class Command
+    {
+        public PrimaryCommand Primary { get; set; }
+        
+        public List<string> Args { get; set; }
+        
+    }
+
+    public enum PrimaryCommand
+    {
+        Build,
+        Project,
+        Run,
+        Settings
+    }
+    
+    public enum Option
+    {
+        Verbose,
+        Headless,
+    }
+
+    public static class SingleToFullMap
+    {
+        public static Dictionary<char, Option> Map = new Dictionary<char, Option>()
+            {{'v', Option.Verbose}, {'h', Option.Headless}};
     }
 }
