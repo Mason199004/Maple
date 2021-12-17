@@ -14,7 +14,7 @@ namespace MapleCore
 			//configSystem.UpdateLoop().Wait();
 			//Console.WriteLine(ConfigSystem.Get<bool>("AUTO_ADD_SRC"));
 			
-			Commands.CommandHandler.HandleCommand("Build Test Moment -vh --test".Split(' '));
+			//Commands.CommandHandler.HandleCommand("Build Test Moment -vh --test".Split(' '));
 		}
 	}
 }
