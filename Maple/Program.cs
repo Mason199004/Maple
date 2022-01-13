@@ -29,7 +29,7 @@ namespace Maple
 			
 			//MapleCore.Commands.CommandHandler.HandleCommand(args);
 			MapleCore.Test.TestCfgSys();
-			return;
+			//return;
 			try
 			{
 				AddFiles();
