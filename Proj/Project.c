@@ -1,14 +1,130 @@
 #include <string.h>
 #include <malloc.h>
 #include "Project.h"
-static Maple_Project GlobalProject;
-static Maple_Project LocalProject;
+
+/* Handled Nodes  |
+ * AUTO_ADD_SRC   | bool
+ * RECURSE_DIR    | bool
+ * DEF_LANG       | DefineLang
+ * DEF_SRC        | DefineSrc
+ * DEF_COMPILER   | DefineCompiler
+ * */
+
+#define AUTOSRC "AUTO_ADD_SRC"
+#define RECURSE "RECURSE_DIR"
+#define DEFLANG "DEF_LANG"
+#define DEFSRC "DEF_SRC"
+#define DEFCOMP "DEF_COMPILER"
+
+typedef struct {
+	char Name[16];
+	void* ValueOrPointer;
+} ProjNode;
+
+typedef struct {
+	char MAGIC[5];
+	u64 reserved;
+	u64 NodeCount;
+	ProjNode nodes[];
+} Maple_Project;
+
+typedef struct {
+	char Name[8];
+	char Extensions[8][4]; //valid extensions for this language
+	u32 MetaLen;
+	char Metadata[]; //currently unused
+} DefineLang;
+
+typedef struct {
+	char Lang[8];
+	//u64 ArenaSize;
+	//arena* PathData;
+	//u64 FileCount;
+	//char* SrcFiles[]
+	//TODO later, arena the strings for src paths, list of pointers into arena
+} DefineSrc;
+
+typedef enum {
+	OptimizeSpeed,
+	OptimizeSize,
+	Output,
+} CompArgs;
+
+typedef struct {
+	CompArgs MapleArg;
+	u32 ArgLen;
+	char Arg[]; //this might not work, if broken change to pointer and arena
+} CompArgKV;
+
+typedef struct {
+	char Name[16]; //look in path or call /usr/bin/env
+	char Lang[8];
+	u32 ArgCount;
+	CompArgKV ArgMap[];
+} DefineCompiler;
+
+static Maple_Project* GlobalProject;
+static Maple_Project* LocalProject;
 
 #define StrEq(X) strcmp(node->Name, X)
 
-u64 WriteNode(ProjNode node, FILE* file)
+u64 WriteNode(ProjNode* node, FILE* file, u64 DataLoc) //yes the error handling here leaks some memory, cry about it
 {
-	return 0;
+	if (StrEq(AUTOSRC) == 0)
+	{
+		return fwrite(node, sizeof(ProjNode), 1, file);
+	}
+	else if (StrEq(RECURSE) == 0)
+	{
+		return fwrite(node, sizeof(ProjNode), 1, file);
+	}
+	else if (StrEq(DEFLANG) == 0)
+	{
+		DefineLang* def = node->ValueOrPointer;
+		node->ValueOrPointer = (void *) DataLoc;
+
+		if (fwrite(node, sizeof(ProjNode), 1, file) == 0) return 0;
+
+		fseek(file, DataLoc, SEEK_SET);
+
+		if (fwrite(def, sizeof(DefineLang) + def->MetaLen, 1, file) == 0) return 0;
+		u64 temp = sizeof(DefineLang) + def->MetaLen;
+		free(def);
+		return temp;
+	}
+	else if (StrEq(DEFSRC) == 0)
+	{
+		DefineSrc* def = node->ValueOrPointer;
+		node->ValueOrPointer = (void*)DataLoc;
+
+		if (fwrite(node, sizeof(ProjNode), 1, file) == 0) return 0;
+
+		fseek(file, DataLoc, SEEK_SET);
+
+		if (fwrite(def, sizeof(DefineSrc), 1, file) == 0) return 0;
+		u64 temp = sizeof(DefineSrc);
+		free(def);
+		return temp;
+	}
+	else if (StrEq(DEFCOMP) == 0)
+	{
+		DefineCompiler* def = node->ValueOrPointer;
+		node->ValueOrPointer = (void*)DataLoc;
+
+		if (fwrite(node, sizeof(ProjNode), 1, file) == 0) return 0;
+
+		fseek(file, DataLoc, SEEK_SET);
+
+		if (fwrite(def, sizeof(DefineCompiler), 1, file) == 0) return 0;
+		u64 accum = 0;
+		for (int i = 0; i < def->ArgCount; ++i)
+		{
+			if (accum += fwrite(&def->ArgMap[i], sizeof(CompArgKV) + def->ArgMap[i].ArgLen, 1, file) == 0) return 0;
+		}
+
+		free(def);
+		return sizeof(DefineCompiler) + accum;
+	}
 }
 
 ProjNode ReadNode(const ProjNode* node, FILE* file)
@@ -33,6 +149,7 @@ ProjNode ReadNode(const ProjNode* node, FILE* file)
 		DefineLang* def = malloc(sizeof(DefineLang));
 		if (fread(def, sizeof(DefineLang), 1, file) == 0)
         {
+			free(def);
             goto error;
         }
 
@@ -57,7 +174,7 @@ ProjNode ReadNode(const ProjNode* node, FILE* file)
 
 		return retnode;
 	}
-	else if (StrEq(DEFSRC) == 0)
+	else if (StrEq(DEFSRC) == 0) //later
 	{
 		fseek(file, (long) node->ValueOrPointer, SEEK_SET);
 
@@ -128,15 +245,75 @@ ProjNode ReadNode(const ProjNode* node, FILE* file)
 	return retnode;
 }
 
-i32 LoadProject(const char* path)
+i32 LoadProject(const char* path, Maple_Project* proj)
 {
+	FILE* file = fopen(path, "rb");
+	if (file == NULL) return -1;
+
+	if (fread(proj, sizeof(Maple_Project), 1, file) == 0) return -1;
+
+	void* temp = realloc(proj, sizeof(Maple_Project) + (sizeof(ProjNode) * proj->NodeCount));
+	if (temp == NULL) return -1;
+	proj = temp;
+
+	if (fread(proj->nodes, sizeof(ProjNode), proj->NodeCount, file) < proj->NodeCount) return -1;
+	for (int i = 0; i < proj->NodeCount; ++i)
+	{
+		ProjNode tempnode = ReadNode(&proj->nodes[i], file);
+		if (strcmp(tempnode.Name, "ERROR") == 0) return -1;
+		proj->nodes[i] = tempnode;
+	}
 	return 0;
 }
 
-i32 SaveProject(const char* path)
+i32 SaveProject(const char* path, Maple_Project* proj)
 {
+	FILE* file = fopen(path, "wb");
+	if (file == NULL) return -1;
+
+	if (fwrite(proj, sizeof(Maple_Project), 1, file) == 0)
+	{
+		fclose(file);
+		return -1;
+	}
+
+	u64 DataLoc = sizeof(Maple_Project) + (proj->NodeCount * sizeof(ProjNode));
+	for (int i = 0; i < proj->NodeCount; ++i)
+	{
+		u64 loc = ftell(file);
+		DataLoc += WriteNode(&proj->nodes[i], file, DataLoc);
+		fseek(file, loc + sizeof(ProjNode), SEEK_SET);
+	}
+	fclose(file);
 	return 0;
 }
 
+i32 SaveLocalProject(const char* path)
+{
+	return SaveProject(path, LocalProject);
+}
 
+i32 LoadLocalProject(const char* path)
+{
+	return LoadProject(path, LocalProject);
+}
+
+void SetNode(ProjNode* node, const char* Name, void* ValueOrPointer)
+{
+	strcpy(node->Name, Name);
+	node->ValueOrPointer = ValueOrPointer;
+}
+
+i32 GenerateNewProjectFromDefaults()
+{
+	LocalProject = malloc(sizeof(Maple_Project) + (sizeof(ProjNode) * 2));
+	strcpy(LocalProject->MAGIC, "MAPLE");
+	LocalProject->NodeCount = 2;
+	LocalProject->reserved = 0;
+
+	SetNode(&LocalProject->nodes[0], AUTOSRC, (void*)1);
+	SetNode(&LocalProject->nodes[1], RECURSE, (void*)1);
+	//add more once src and compiler shit works
+	return 0;
+}
 

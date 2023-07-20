@@ -11,6 +11,11 @@ typedef long long int i64;
 typedef float f32;
 typedef double f64;
 
+#ifdef _WIN32
+#define PATH_SEPARATOR '\\'
+#else
+#define PATH_SEPARATOR '/'
+#endif
 
 #define MAPLE_MAJOR_VER "0"
 #define MAPLE_MINOR_VER "0"

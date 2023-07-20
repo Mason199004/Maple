@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "base.h"
+#include "Proj/Project.h"
 
 void printVersion();
 i32 newProject(char* name);
@@ -39,5 +41,14 @@ void printVersion()
 
 i32 newProject(char* name)
 {
+	GenerateNewProjectFromDefaults();
+	char cwd[PATH_MAX];
+	if (getcwd(cwd, sizeof(cwd)) == NULL) return -1;
+	u64 len = strlen(name);
+	char path[PATH_MAX + len];
 
+	sprintf(path, "%s%c%s", cwd, PATH_SEPARATOR, name);
+
+	SaveLocalProject(path);
+	return 0;
 }
