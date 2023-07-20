@@ -1,6 +1,7 @@
 #include <string.h>
 #include <malloc.h>
 #include "Project.h"
+#include "../Arena/Arena.h"
 
 /* Handled Nodes  |
  * AUTO_ADD_SRC   | bool
@@ -24,6 +25,7 @@ typedef struct {
 typedef struct {
 	char MAGIC[5];
 	u64 reserved;
+	Arena arena;
 	u64 NodeCount;
 	ProjNode nodes[];
 } Maple_Project;
@@ -37,11 +39,8 @@ typedef struct {
 
 typedef struct {
 	char Lang[8];
-	//u64 ArenaSize;
-	//arena* PathData;
-	//u64 FileCount;
-	//char* SrcFiles[]
-	//TODO later, arena the strings for src paths, list of pointers into arena
+	u64 FileCount;
+	char* SrcFiles[]; //in arena
 } DefineSrc;
 
 typedef enum {
@@ -53,7 +52,7 @@ typedef enum {
 typedef struct {
 	CompArgs MapleArg;
 	u32 ArgLen;
-	char Arg[]; //this might not work, if broken change to pointer and arena
+	char* Arg; //in arena
 } CompArgKV;
 
 typedef struct {
