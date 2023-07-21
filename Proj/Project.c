@@ -67,7 +67,7 @@ static Maple_Project* LocalProject;
 
 #define StrEq(X) strcmp(node->Name, X)
 
-u64 WriteNode(ProjNode* node, FILE* file, u64 DataLoc) //yes the error handling here leaks some memory, cry about it
+u64 WriteNode(ProjNode* node, FILE* file, u64 DataLoc, ArenaPtrMap* map) //yes the error handling here leaks some memory, cry about it
 {
 	if (StrEq(AUTOSRC) == 0)
 	{
@@ -97,11 +97,22 @@ u64 WriteNode(ProjNode* node, FILE* file, u64 DataLoc) //yes the error handling 
 		node->ValueOrPointer = (void*)DataLoc;
 
 		if (fwrite(node, sizeof(ProjNode), 1, file) == 0) return 0;
-
 		fseek(file, DataLoc, SEEK_SET);
 
-		if (fwrite(def, sizeof(DefineSrc), 1, file) == 0) return 0;
-		u64 temp = sizeof(DefineSrc);
+        for (int i = 0; i < def->FileCount; ++i)
+        {
+            for (int j = 0; j < map->KvCount; ++j)
+            {
+                if (map->items[j].oldPtr == def->SrcFiles[i])
+                {
+                    def->SrcFiles[i] = map->items[j].newPtr;
+                }
+            }
+        }
+
+		if (fwrite(def, sizeof(DefineSrc) + (sizeof(char*) * def->FileCount), 1, file) == 0) return 0;
+
+		u64 temp = sizeof(DefineSrc) + (sizeof(char*) * def->FileCount);
 		free(def);
 		return temp;
 	}
@@ -109,6 +120,17 @@ u64 WriteNode(ProjNode* node, FILE* file, u64 DataLoc) //yes the error handling 
 	{
 		DefineCompiler* def = node->ValueOrPointer;
 		node->ValueOrPointer = (void*)DataLoc;
+
+        for (int i = 0; i < def->ArgCount; ++i)
+        {
+            for (int j = 0; j < map->KvCount; ++j)
+            {
+                if (map->items[j].oldPtr == def->ArgMap[i].Arg)
+                {
+                    def->ArgMap[i].Arg = map->items[j].newPtr;
+                }
+            }
+        }
 
 		if (fwrite(node, sizeof(ProjNode), 1, file) == 0) return 0;
 
@@ -126,7 +148,7 @@ u64 WriteNode(ProjNode* node, FILE* file, u64 DataLoc) //yes the error handling 
 	}
 }
 
-ProjNode ReadNode(const ProjNode* node, FILE* file)
+ProjNode ReadNode(const ProjNode* node, FILE* file, ArenaPtrMap* map)
 {
     ProjNode retnode;
     if ((u64) node->ValueOrPointer > (u64)INT_MAX)
@@ -177,11 +199,30 @@ ProjNode ReadNode(const ProjNode* node, FILE* file)
 	{
 		fseek(file, (long) node->ValueOrPointer, SEEK_SET);
 
-		DefineLang* def = malloc(sizeof(DefineSrc));
+		DefineSrc* def = malloc(sizeof(DefineSrc));
 		if (fread(def, sizeof(DefineSrc), 1, file) == 0)
         {
             free(def);
             goto error;
+        }
+
+        void* temp = realloc(def, sizeof(DefineSrc) + (def->FileCount * sizeof(char*)));
+        if (temp == NULL)
+        {
+            free(def);
+            goto error;
+        }
+        def = temp;
+
+        for (int i = 0; i < def->FileCount; ++i)
+        {
+            for (int j = 0; j < map->KvCount; ++j)
+            {
+                if (def->SrcFiles[i] == map->items[j].oldPtr)
+                {
+                    def->SrcFiles[i] = map->items[j].newPtr;
+                }
+            }
         }
 
 		strcpy(retnode.Name, node->Name);
@@ -270,19 +311,60 @@ i32 SaveProject(const char* path, Maple_Project* proj)
 	FILE* file = fopen(path, "wb");
 	if (file == NULL) return -1;
 
+    u64 DataLoc = sizeof(Maple_Project) + (proj->NodeCount * sizeof(ProjNode));
+    ArenaPtrMap* map = Arena_Compact(&proj->arena);
+
+    for (int i = 0; i < proj->arena.PtrCount; ++i)
+    {
+        for (int j = 0; j < map->KvCount; ++j)
+        {
+            if (proj->arena.Pointers[i] == map->items[j].newPtr)
+            {
+                map->items[j].newPtr = (void*)((void*)proj->arena.Data - proj->arena.Pointers[i] + DataLoc);
+                proj->arena.Pointers[i] = map->items[j].newPtr;
+            }
+        }
+    }
+
+    u64 old = ftell(file);
+    fseek(file, DataLoc, SEEK_SET);
+    if (fwrite(proj->arena.Data, proj->arena.DataSize, 1, file) == 0)
+    {
+        fclose(file);
+        return -1;
+    }
+    proj->arena.Data = (u8*)DataLoc;
+    DataLoc += proj->arena.DataSize;
+    if (fwrite(proj->arena.Pointers, proj->arena.PtrCount * sizeof(void*), 1, file) == 0)
+    {
+        fclose(file);
+        return -1;
+    }
+    proj->arena.Pointers = (void**) DataLoc;
+    DataLoc += proj->arena.PtrCount * sizeof(void*);
+    if (fwrite(proj->arena.FreedPtrs, proj->arena.PtrCount * sizeof(u8), 1, file) == 0)
+    {
+        fclose(file);
+        return -1;
+    }
+    proj->arena.FreedPtrs = (void*)DataLoc;
+    DataLoc += proj->arena.PtrCount * sizeof(u8);
+    fseek(file, old, SEEK_SET);
+
 	if (fwrite(proj, sizeof(Maple_Project), 1, file) == 0)
 	{
 		fclose(file);
 		return -1;
 	}
 
-	u64 DataLoc = sizeof(Maple_Project) + (proj->NodeCount * sizeof(ProjNode));
+
 	for (int i = 0; i < proj->NodeCount; ++i)
 	{
 		u64 loc = ftell(file);
-		DataLoc += WriteNode(&proj->nodes[i], file, DataLoc);
+		DataLoc += WriteNode(&proj->nodes[i], file, DataLoc, map);
 		fseek(file, loc + sizeof(ProjNode), SEEK_SET);
 	}
+    free(map);
 	fclose(file);
 	return 0;
 }
