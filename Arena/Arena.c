@@ -2,6 +2,11 @@
 #include <mem.h>
 #include "Arena.h"
 
+void Arena_init(Arena* arena)
+{
+    memset(arena, 0, sizeof(Arena));
+}
+
 void* Arena_alloc(Arena* arena, u64 size)
 {
 	u64 idx = arena->PtrCount++;
@@ -18,7 +23,7 @@ void* Arena_alloc(Arena* arena, u64 size)
 	arena->FreedPtrs = temp3;
 	arena->FreedPtrs[arena->PtrCount - 1] = 0;
 
-	u64 ptr = arena->DataSize;
+	u64 ptr = arena->DataSize + (u64)arena->Data;
 	arena->DataSize += size;
 
 	arena->Pointers[idx] = (void *) ptr;
@@ -155,12 +160,14 @@ ArenaPtrMap* Arena_Compact(Arena* arena)
 	u64 finalCount = 0;
 	for (int i = 0; i < arena->PtrCount; ++i)
 	{
-		if (arena->FreedPtrs[i])
+		if (!arena->FreedPtrs[i])
 		{
 			finalCount++;
 		}
 	}
 	ArenaPtrMap* map = malloc(sizeof(ArenaPtrMap) + (sizeof(ArenaPtrMapKV) * finalCount));
+    map->KvCount = finalCount;
+
 	for (int i = 0; i < arena->PtrCount; ++i) {
 		if (!arena->FreedPtrs[i])
 		{

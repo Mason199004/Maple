@@ -9,6 +9,7 @@
  * DEF_LANG       | DefineLang
  * DEF_SRC        | DefineSrc
  * DEF_COMPILER   | DefineCompiler
+ * NAME           | char* arena'd
  * */
 
 #define AUTOSRC "AUTO_ADD_SRC"
@@ -16,6 +17,7 @@
 #define DEFLANG "DEF_LANG"
 #define DEFSRC "DEF_SRC"
 #define DEFCOMP "DEF_COMPILER"
+#define NAME "NAME"
 
 typedef struct {
 	char Name[16];
@@ -61,6 +63,7 @@ typedef struct {
 	u32 ArgCount;
 	CompArgKV ArgMap[];
 } DefineCompiler;
+
 
 static Maple_Project* GlobalProject;
 static Maple_Project* LocalProject;
@@ -146,6 +149,18 @@ u64 WriteNode(ProjNode* node, FILE* file, u64 DataLoc, ArenaPtrMap* map) //yes t
 		free(def);
 		return sizeof(DefineCompiler) + accum;
 	}
+    else if (StrEq(NAME) == 0)
+    {
+        for (int j = 0; j < map->KvCount; ++j)
+        {
+            if (map->items[j].oldPtr == node->ValueOrPointer)
+            {
+                node->ValueOrPointer = map->items[j].newPtr;
+            }
+        }
+
+        return fwrite(node, sizeof(ProjNode), 1, file);
+    }
 }
 
 ProjNode ReadNode(const ProjNode* node, FILE* file, ArenaPtrMap* map)
@@ -274,9 +289,23 @@ ProjNode ReadNode(const ProjNode* node, FILE* file, ArenaPtrMap* map)
             }
         }
 
+
         strcpy(retnode.Name, node->Name);
         retnode.ValueOrPointer = def;
 
+        return retnode;
+    }
+    else if (StrEq(NAME) == 0)
+    {
+        for (int j = 0; j < map->KvCount; ++j)
+        {
+            if (map->items[j].oldPtr == node->ValueOrPointer)
+            {
+                retnode.ValueOrPointer = map->items[j].newPtr;
+            }
+        }
+
+        strcpy(retnode.Name, node->Name);
         return retnode;
     }
 
@@ -297,9 +326,28 @@ i32 LoadProject(const char* path, Maple_Project* proj)
 	proj = temp;
 
 	if (fread(proj->nodes, sizeof(ProjNode), proj->NodeCount, file) < proj->NodeCount) return -1;
+
+    proj->arena.Data = malloc(proj->arena.DataSize);
+    if (fread(proj->arena.Data, proj->arena.DataSize, 1, file) == 0) return -1;
+
+    proj->arena.Pointers = malloc(sizeof(void*) * proj->arena.PtrCount);
+    if (fread(proj->arena.Pointers, sizeof(void*), proj->arena.PtrCount, file) < proj->arena.PtrCount) return -1;
+
+    proj->arena.FreedPtrs = malloc(proj->arena.PtrCount);
+    if (fread(proj->arena.FreedPtrs, sizeof(u8), proj->arena.PtrCount, file) < proj->arena.PtrCount) return -1;
+
+    ArenaPtrMap* map = malloc(sizeof(ArenaPtrMap) + (sizeof(ArenaPtrMapKV) * proj->arena.PtrCount));
+
+    for (int i = 0; i < proj->arena.PtrCount; ++i)
+    {
+        map->items[i].oldPtr = proj->arena.Pointers[i];
+        map->items[i].newPtr = proj->arena.Data + (u64)(proj->arena.Pointers[i] - (sizeof(Maple_Project) + (sizeof(ProjNode) * proj->NodeCount)));
+        proj->arena.Pointers[i] = map->items[i].newPtr;
+    }
+
 	for (int i = 0; i < proj->NodeCount; ++i)
 	{
-		ProjNode tempnode = ReadNode(&proj->nodes[i], file);
+		ProjNode tempnode = ReadNode(&proj->nodes[i], file, map);
 		if (strcmp(tempnode.Name, "ERROR") == 0) return -1;
 		proj->nodes[i] = tempnode;
 	}
@@ -385,15 +433,20 @@ void SetNode(ProjNode* node, const char* Name, void* ValueOrPointer)
 	node->ValueOrPointer = ValueOrPointer;
 }
 
-i32 GenerateNewProjectFromDefaults()
+i32 GenerateNewProjectFromDefaults(const char* name) //redo
 {
-	LocalProject = malloc(sizeof(Maple_Project) + (sizeof(ProjNode) * 2));
+	LocalProject = malloc(sizeof(Maple_Project) + (sizeof(ProjNode) * 3));
 	strcpy(LocalProject->MAGIC, "MAPLE");
-	LocalProject->NodeCount = 2;
+	LocalProject->NodeCount = 3;
 	LocalProject->reserved = 0;
+
+    Arena_init(&LocalProject->arena);
+    char* nam = Arena_alloc(&LocalProject->arena, strlen(name));
+    strcpy(nam, name);
 
 	SetNode(&LocalProject->nodes[0], AUTOSRC, (void*)1);
 	SetNode(&LocalProject->nodes[1], RECURSE, (void*)1);
+    SetNode(&LocalProject->nodes[2], NAME, nam);
 	//add more once src and compiler shit works
 	return 0;
 }
