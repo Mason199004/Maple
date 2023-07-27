@@ -161,6 +161,7 @@ u64 WriteNode(ProjNode* node, FILE* file, u64 DataLoc, ArenaPtrMap* map) //yes t
 
         return fwrite(node, sizeof(ProjNode), 1, file);
     }
+	return -1;
 }
 
 ProjNode ReadNode(const ProjNode* node, FILE* file, ArenaPtrMap* map)
@@ -436,6 +437,7 @@ void SetNode(ProjNode* node, const char* Name, void* ValueOrPointer)
 i32 GenerateNewProjectFromDefaults(const char* name) //redo
 {
 	LocalProject = malloc(sizeof(Maple_Project) + (sizeof(ProjNode) * 3));
+	memset(LocalProject, 0 , sizeof(Maple_Project) + (sizeof(ProjNode) * 3));
 	strcpy(LocalProject->MAGIC, "MAPLE");
 	LocalProject->NodeCount = 3;
 	LocalProject->reserved = 0;

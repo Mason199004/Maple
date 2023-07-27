@@ -187,9 +187,9 @@ ArenaPtrMap* Arena_Compact(Arena* arena)
 		}
 	}
 
-	for (int u64 = 0; i < arena->PtrCount; ++i)
+	for (int j = 0; j < arena->PtrCount; ++j)
 	{
-		map->items[i].newPtr = arena->Pointers[i];
+		map->items[j].newPtr = arena->Pointers[j];
 	}
 
 	return map;
