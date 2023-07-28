@@ -1,7 +1,7 @@
 #include <string.h>
 #include <malloc.h>
 #include "Project.h"
-#include "../Arena/Arena.h"
+
 
 /* Handled Nodes  |
  * AUTO_ADD_SRC   | bool
@@ -19,18 +19,7 @@
 #define DEFCOMP "DEF_COMPILER"
 #define NAME "NAME"
 
-typedef struct {
-	char Name[16];
-	void* ValueOrPointer;
-} ProjNode;
 
-typedef struct {
-	char MAGIC[5];
-	u64 reserved;
-	Arena arena;
-	u64 NodeCount;
-	ProjNode nodes[];
-} Maple_Project;
 
 typedef struct {
 	char Name[8];
@@ -64,9 +53,8 @@ typedef struct {
 	CompArgKV ArgMap[];
 } DefineCompiler;
 
-
-static Maple_Project* GlobalProject;
-static Maple_Project* LocalProject;
+Maple_Project* GlobalProject;
+Maple_Project* LocalProject;
 
 #define StrEq(X) strcmp(node->Name, X)
 
@@ -418,15 +406,7 @@ i32 SaveProject(const char* path, Maple_Project* proj)
 	return 0;
 }
 
-i32 SaveLocalProject(const char* path)
-{
-	return SaveProject(path, LocalProject);
-}
 
-i32 LoadLocalProject(const char* path)
-{
-	return LoadProject(path, LocalProject);
-}
 
 void SetNode(ProjNode* node, const char* Name, void* ValueOrPointer)
 {

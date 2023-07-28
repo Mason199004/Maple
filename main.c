@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "base.h"
-#include "Proj/Project.h"
+#include "Proj/ProjectHandler.h"
 
 void printVersion();
 i32 newProject(char* name);
