@@ -126,5 +126,29 @@ void IO_RevertFile(FILE* file)
 	FILE* bakfile = GetFmap(file);
 	u64 len = IO_flength(bakfile);
 
-	//TODO finish
+	fseek(file, 0, SEEK_SET);
+	fseek(bakfile, 0, SEEK_SET);
+
+	u8 data[len];
+	while (!feof(bakfile))
+	{
+		fread(data + ftell(bakfile), 1, len, bakfile);
+	}
+	u64 i = 0;
+	while (i < len)
+	{
+		i += fwrite(data + i, 1, len, file);
+	}
+	fclose(bakfile);
+}
+
+void IO_PANIC()
+{
+	for (int i = 0; i < 1024; ++i) {
+		if (fmap.files[i].file != NULL)
+		{
+			IO_RevertFile(fmap.files[i].file);
+			fclose(fmap.files[i].file);
+		}
+	}
 }
