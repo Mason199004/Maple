@@ -47,6 +47,7 @@ i32 newProject(char* name)
 	u64 len = strlen(name);
 	char path[PATH_MAX + len];
 
+	if (strlen(cwd) + len > PATH_MAX) return -1;
 	sprintf(path, "%s%cbuild.maple", cwd, PATH_SEPARATOR);
 
 	SaveLocalProject(path);

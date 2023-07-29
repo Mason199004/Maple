@@ -19,6 +19,7 @@ typedef struct {
 
 extern Maple_Project* GlobalProject;
 extern Maple_Project* LocalProject;
+extern Maple_Project* HiddenProject;
 
 i32 GenerateNewProjectFromDefaults(const char* name);
 

@@ -55,6 +55,7 @@ typedef struct {
 
 Maple_Project* GlobalProject;
 Maple_Project* LocalProject;
+Maple_Project* HiddenProject;
 
 #define StrEq(X) strcmp(node->Name, X)
 
