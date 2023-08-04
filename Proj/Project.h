@@ -19,7 +19,7 @@ typedef struct {
 
 extern Maple_Project* GlobalProject;
 extern Maple_Project* LocalProject;
-extern Maple_Project* HiddenProject;
+extern Maple_Project* HiddenProject; //used to indicate global override local, stored in local dotfolder
 
 i32 GenerateNewProjectFromDefaults(const char* name);
 
