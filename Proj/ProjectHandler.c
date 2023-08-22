@@ -66,34 +66,72 @@ i32 LoadHiddenProject(const char* path)
 	return LoadProject(path, HiddenProject);
 }
 
-ProjNode* GetNodeFromProj(Maple_Project* proj, const char* name)
+ProjNode* GetNodeFromProj(Maple_Project* proj, const char* name, i32 NodeNum)
 {
+	i32 j = 0;
 	for (int i = 0; i < proj->NodeCount; ++i)
 	{
 		if (strcmp(proj->nodes[i].Name, name) == 0)
 		{
-			return &proj->nodes[i];
+			if (j == NodeNum)
+			{
+				return &proj->nodes[i];
+			}
+			j++;
 		}
 	}
 	return NULL;
 }
 
-ProjNode* GetNode(const char* name)
+i32 CountNodes(const char* name)
 {
-	if (GetNodeFromProj(HiddenProject, name) != NULL)
+	i32 ret = 0;
+	for (int i = 0; i < LocalProject->NodeCount; ++i)
 	{
-		return GetNodeFromProj(GlobalProject, name);
+		if (strcmp(LocalProject->nodes[i].Name, name) == 0)
+		{
+			ret++;
+		}
+	}
+	return ret;
+}
+
+ProjNode* GetNode(const char* name, i32 NodeNum)
+{
+	if (GetNodeFromProj(HiddenProject, name, NodeNum) != NULL)
+	{
+		return GetNodeFromProj(GlobalProject, name, NodeNum);
 	}
 	else
 	{
 		ProjNode* ret;
-		if ((ret = GetNodeFromProj(LocalProject, name)) != NULL)
+		if ((ret = GetNodeFromProj(LocalProject, name, NodeNum)) != NULL)
 		{
 			return ret;
 		}
 		else
 		{
-			return GetNodeFromProj(GlobalProject, name);
+			return GetNodeFromProj(GlobalProject, name, NodeNum);
 		}
 	}
+}
+
+i32 SetupEnv(const char* ProjDir)
+{
+	char* proj = strcat(ProjDir, "build.maple");
+	char* hidden = strcat(ProjDir, "working/build.maple");
+	i32 err = 0;
+
+	err += LoadLocalProject(proj);
+	err += LoadGlobalProject();
+	err += LoadHiddenProject(hidden);
+
+	if (err)
+	{
+		return -1;
+	}
+
+	free(proj);
+	free(hidden);
+	return 0;
 }

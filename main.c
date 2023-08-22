@@ -7,6 +7,7 @@
 
 void printVersion();
 i32 newProject(char* name);
+i32 buildProject(char* path);
 
 static char* commands[] = {"new", "build", "add"};
 
@@ -31,6 +32,23 @@ int main(int argc, char** argv)
 			exit(1);
 		}
 	}
+
+	if (strcmp(argv[1], commands[1]) == 0)
+	{
+		char path[PATH_MAX];
+		memset(path, 0, PATH_MAX);
+		getcwd(path, PATH_MAX);
+
+		if (path[strlen(path)] != '/')
+		{
+			path[strlen(path)] = '/';
+		}
+
+		if (buildProject(path))
+		{
+			fprintf(stderr, "%s", "An error has occurred while building\n");
+		}
+	}
 	return 0;
 }
 
@@ -52,4 +70,14 @@ i32 newProject(char* name)
 
 	SaveLocalProject(path);
 	return 0;
+}
+
+i32 buildProject(char* path)
+{
+	if (SetupEnv(path))
+	{
+		return -1;
+	}
+
+	
 }
