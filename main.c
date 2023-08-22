@@ -79,5 +79,5 @@ i32 buildProject(char* path)
 		return -1;
 	}
 
-	
+	return 0;
 }
