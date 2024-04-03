@@ -5,7 +5,6 @@ set(CMAKE_C_STANDARD 23)
 
 add_executable(Maple main.c
         Project/MapleProj.c
-        Project/MapleProj.h
         plugins/plugins.c
-        plugins/plugins.h
-        MapleTypes.c)
+        MapleTypes.c
+		logging/logging.c)

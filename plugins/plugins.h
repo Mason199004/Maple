@@ -26,6 +26,8 @@ BOOL maple_read_property(MAPLE_PLUGIN_INFO* pinfo, PROP_ID id, U64 sub_id, PROPE
 
 //the idea here is to add way more hooks and stuff so that plugins could potentially perform any number of actions -
 //pre/during/post build, possibly per file operations, who knows, i also want to have a permission/intent system which -
-//forces the user to allow the plugin access to those permissions before it will be allowed to load fully
+//forces the user to allow the plugin access to those permissions before it will be allowed to load fully, but also -
+//its quite questionable whether that would actually matter or not given its native code and you could just shove -
+//malware directly into the plugin
 
 #endif //MAPLE_PLUGINS_H

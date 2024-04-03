@@ -24,11 +24,6 @@ BOOL validate_plugin(MAPLE_PLUGIN_INFO* info)
     return false;
 }
 
-void maple_system_log_error();
-
-void maple_system_log_warning();
-
-void maple_system_log_info();
 
 void maple_plugin_log_error();
 

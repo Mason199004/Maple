@@ -1,7 +1,7 @@
 #include "MapleTypes.h"
 #include <string.h>
 
-BOOL maple_validate_printable_string(LSTR* str) //todo: make better
+BOOL maple_validate_printable_string(LSTR* str) //todo: make better, possibly mandate ascii for certain things
 {
     for (int i = 0; i < str->size; ++i)
     {
