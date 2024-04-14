@@ -2,25 +2,27 @@
 #include <stdlib.h>
 #include <string.h>
 #include "MapleProj.h"
+#include "../logging/logging.h"
 
-PDT_ENT* PropList;
 BYTE_ARR* (**CallbackList)(PROPERTY*);
-I32 PropCount;
-I32 AllocCount;
+PDT* Properties;
+
+PROPERTY* PropList;
+U64 PLSize;
 
 void maple_init_proj_system()
 {
-    PropCount = 0;
-    AllocCount = 8;
-    PropList = malloc(sizeof(PDT_ENT) * (AllocCount));
-    CallbackList = malloc(sizeof(BYTE_ARR*) * (AllocCount));
+    Properties = malloc(sizeof(PDT));
+    CallbackList = malloc(sizeof(BYTE_ARR*) * (0));
+    PropList = malloc(1);
+    PLSize = 0;
 }
 
 BOOL maple_check_for_existing(const PDT_ENT* prop)
 {
-    for (int i = 0; i < PropCount; ++i)
+    for (int i = 0; i < Properties->ent_count; ++i)
     {
-        if (memcmp(PropList[i].id, prop->id, sizeof(prop->id)) == 0)
+        if (memcmp(Properties->entries[i].id, prop->id, sizeof(prop->id)) == 0)
         {
             return true;
         }
@@ -30,22 +32,20 @@ BOOL maple_check_for_existing(const PDT_ENT* prop)
 
 BOOL maple_inform_new_property(PDT_ENT prop, BYTE_ARR* (*deserialize_callback)(PROPERTY*))
 {
-    if (PropCount + 1 > AllocCount)
+
+    PDT* temp = realloc(Properties, sizeof(PDT) + (sizeof(PDT_ENT) * (Properties->ent_count + 1)));
+    BYTE_ARR* (**temp2)(PROPERTY*) = realloc(CallbackList, sizeof(BYTE_ARR*) * (Properties->ent_count + 1));
+
+    if (temp == NULL || temp2 == NULL)
     {
-        PDT_ENT* temp = realloc(PropList, sizeof(PDT_ENT) * (AllocCount * 2));
-        BYTE_ARR* (**temp2)(PROPERTY*) = realloc(CallbackList, sizeof(BYTE_ARR*) * (AllocCount * 2));
-
-        if (temp == NULL || temp2 == NULL)
-        {
-            //todo: handle error
-        }
-
-        PropList = temp;
-        CallbackList = temp2;
-        AllocCount *= 2;
+        maple_system_panic("ProjectSystem", "realloc failed!");
     }
 
-    PropList[PropCount] = prop;
-    CallbackList[PropCount++] = deserialize_callback;
+    Properties = temp;
+    CallbackList = temp2;
+
+    Properties->entries[Properties->ent_count] = prop;
+    CallbackList[Properties->ent_count++] = deserialize_callback;
     return true;
 }
+
