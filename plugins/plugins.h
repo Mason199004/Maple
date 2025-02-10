@@ -6,28 +6,29 @@
 typedef struct
 {
     U64 plugin_version; //x.x.x.x each value is 2 bytes
-    LSTR* name;
-    LSTR* description;
-    //possibly permissions/intents
+    LSTR name;
+    LSTR description;
 } MAPLE_PLUGIN_INFO;
+// probably not going to use the struct anymore, will likely keep the same info but as multiple symbols in the
+// plugin dll's, lookup using dlsym or wtv
+
 
 typedef struct
 {
-
+    //will contain function pointers to all maple plugin system functions, struct in passed into a plugins init function
 } maple_plugin_start_info;
 
-BOOL maple_register_plugin(MAPLE_PLUGIN_INFO* info, void (*plugin_entry)(maple_plugin_start_info*));
+BOOL maple_register_property(PROPERTY_DEF prop, PROPERTY_ACCESS external_access_level);
 
-BOOL maple_register_property(MAPLE_PLUGIN_INFO* pinfo, PDT_ENT prop, BYTE_ARR* (*deserialize_callback)(PROPERTY*));
+BOOL maple_write_property(PROPERTY* prop);
 
-BOOL maple_write_property(MAPLE_PLUGIN_INFO* pinfo, PROPERTY* prop);
+BOOL maple_read_property(LSTR property_name, PROPERTY* out_prop);
 
-BOOL maple_read_property(MAPLE_PLUGIN_INFO* pinfo, PROP_ID id, U64 sub_id, PROPERTY* out_prop, U64 ptr_size);
+BOOL maple_get_property_info(LSTR property_name, PROPERTY_INFO* out_info);
+
+BOOL maple_list_properties(LSTR_ARR* out_list);
 
 //the idea here is to add way more hooks and stuff so that plugins could potentially perform any number of actions -
-//pre/during/post build, possibly per file operations, who knows, i also want to have a permission/intent system which -
-//forces the user to allow the plugin access to those permissions before it will be allowed to load fully, but also -
-//its quite questionable whether that would actually matter or not given its native code and you could just shove -
-//malware directly into the plugin
+//pre/during/post build, possibly per file operations, who knows
 
 #endif //MAPLE_PLUGINS_H

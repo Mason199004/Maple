@@ -38,31 +38,4 @@ void maple_init_plugin_system()
     PluginCount = 0;
 }
 
-BOOL maple_register_plugin(MAPLE_PLUGIN_INFO* info, void (*plugin_entry)(maple_plugin_start_info*))
-{
-    if (!validate_plugin(info))
-    {
-        return false;
-    }
 
-    //todo: log error
-
-    Plugins[PluginCount] = info;
-    plugin_callbacks[PluginCount++] = plugin_entry;
-    return true;
-}
-
-BOOL maple_register_property(MAPLE_PLUGIN_INFO* pinfo, PDT_ENT prop, BYTE_ARR* (*deserialize_callback)(PROPERTY*))
-{
-    
-}
-
-BOOL maple_write_property(MAPLE_PLUGIN_INFO* pinfo, PROPERTY* prop)
-{
-
-}
-
-BOOL maple_read_property(MAPLE_PLUGIN_INFO* pinfo, PROP_ID id, U64 sub_id, PROPERTY* out_prop, U64 ptr_size)
-{
-
-}

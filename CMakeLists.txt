@@ -7,4 +7,5 @@ add_executable(Maple main.c
         Project/MapleProj.c
         plugins/plugins.c
         MapleTypes.c
-		logging/logging.c)
+		logging/logging.c
+)
