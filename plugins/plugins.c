@@ -1,8 +1,10 @@
 #include "plugins.h"
-#include <string.h>
 
-MAPLE_PLUGIN_INFO* Plugins[256];
-void (*plugin_callbacks[256])(maple_plugin_start_info*);
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+MAPLE_PLUGIN_INFO* Plugins;
 I32 PluginCount;
 
 BOOL validate_plugin(MAPLE_PLUGIN_INFO* info)
@@ -13,7 +15,7 @@ BOOL validate_plugin(MAPLE_PLUGIN_INFO* info)
         {
             for (int i = 0; i < PluginCount; ++i)
             {
-                if (maple_lstrcmp(info->name, Plugins[i]->name))
+                if (maple_lstrcmp(info->name, Plugins[i].name))
                 {
                     return false;
                 }
@@ -24,17 +26,50 @@ BOOL validate_plugin(MAPLE_PLUGIN_INFO* info)
     return false;
 }
 
+char* maple_get_config_dir()
+{
+    char *home_dir = NULL;
+    char *config_dir = NULL;
 
-void maple_plugin_log_error();
+#ifdef _WIN32
+    char *appdata = getenv("APPDATA");
+    if (appdata)
+    {
+        config_dir = malloc(strlen(appdata) + strlen("\\maple") + 1);
+        sprintf(config_dir, "%s\\maple", appdata);
+    }
+    else
+    {
+        home_dir = getenv("USERPROFILE");
 
-void maple_plugin_log_warning();
+        config_dir = malloc(strlen(home_dir) + strlen("\\AppData\\Roaming\\maple") + 1);
+        sprintf(config_dir, "%s\\AppData\\Roaming\\maple", home_dir);
+    }
 
-void maple_plugin_log_info();
+#else
+    home_dir = getenv("HOME");
+    char *xdg_config_home = getenv("XDG_CONFIG_HOME");
+
+    if (xdg_config_home)
+    {
+        config_dir = malloc(strlen(xdg_config_home) + strlen("/maple") + 1);
+        sprintf(config_dir, "%s/maple", xdg_config_home);
+    }
+    else
+    {
+        config_dir = malloc(strlen(home_dir) + strlen("/.config/maple") + 1);
+        sprintf(config_dir, "%s/.config/maple", home_dir);
+    }
+#endif
+
+    return config_dir;
+}
+
 
 void maple_init_plugin_system()
 {
-    memset(Plugins, 0, sizeof(MAPLE_PLUGIN_INFO*) * 256);
-    memset(plugin_callbacks, 0, sizeof(void*) * 256);
+    Plugins = malloc(sizeof(MAPLE_PLUGIN_INFO) * 256);
+    memset(Plugins, 0, sizeof(MAPLE_PLUGIN_INFO) * 256);
     PluginCount = 0;
 }
 

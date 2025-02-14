@@ -55,6 +55,7 @@ typedef enum MTYPE
     M_LSTR,
     M_LSTRARR,
     M_BYTEARR,
+    M_PTR
 } MTYPE;
 
 typedef struct

@@ -15,6 +15,15 @@ typedef struct
 
 typedef struct
 {
+    U64 struct_size;
+    BOOL (*maple_register_property)(PROPERTY_DEF prop, PROPERTY_ACCESS external_access_level);
+    BOOL (*maple_write_property)(PROPERTY* prop);
+    BOOL (*maple_read_property)(LSTR property_name, PROPERTY* out_prop);
+    BOOL (*maple_get_property_info)(LSTR property_name, PROPERTY_INFO* out_info);
+    BOOL (*maple_list_properties)(LSTR_ARR* out_list);
+    void (*maple_plugin_log_error)(LSTR str);
+    void (*maple_plugin_log_warning)(LSTR str);
+    void (*maple_plugin_log_info)(LSTR str);
     //will contain function pointers to all maple plugin system functions, struct in passed into a plugins init function
 } maple_plugin_start_info;
 
@@ -28,7 +37,12 @@ BOOL maple_get_property_info(LSTR property_name, PROPERTY_INFO* out_info);
 
 BOOL maple_list_properties(LSTR_ARR* out_list);
 
-//the idea here is to add way more hooks and stuff so that plugins could potentially perform any number of actions -
-//pre/during/post build, possibly per file operations, who knows
+void maple_plugin_log_error(LSTR str);
+
+void maple_plugin_log_warning(LSTR str);
+
+void maple_plugin_log_info(LSTR str);
+
+
 
 #endif //MAPLE_PLUGINS_H
