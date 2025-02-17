@@ -1,6 +1,6 @@
-#include <stdint.h>
 #ifndef MAPLE_MAPLETYPES_H
 #define MAPLE_MAPLETYPES_H
+#include <stdint.h>
 
 //types
 

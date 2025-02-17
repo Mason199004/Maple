@@ -3,19 +3,88 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "../logging/logging.h"
 
-MAPLE_PLUGIN_INFO* Plugins;
-I32 PluginCount;
+maple_plugins plugins = {0};
 
-BOOL validate_plugin(MAPLE_PLUGIN_INFO* info)
+BOOL maple_register_property(PROPERTY_DEF prop, PROPERTY_ACCESS external_access_level)
+{
+
+}
+
+BOOL maple_write_property(PROPERTY* prop)
+{
+
+}
+
+BOOL maple_read_property(LSTR property_name, PROPERTY* out_prop)
+{
+
+}
+
+BOOL maple_get_property_info(LSTR property_name, PROPERTY_INFO* out_info)
+{
+
+}
+
+BOOL maple_list_properties(LSTR_ARR* out_list)
+{
+
+}
+
+void maple_plugin_log_error(LSTR str)
+{
+    //TODO
+}
+
+void maple_plugin_log_warning(LSTR str)
+{
+    //TODO
+}
+
+void maple_plugin_log_info(LSTR str)
+{
+    //TODO
+}
+
+BOOL maple_create_plugin(maple_plugin_info info, void (*init_proc)(maple_plugin_procs))
+{
+    if (plugins.num_plugins >= plugins.plugin_capacity)
+    {
+        void* temp = realloc(plugins.plugins, (plugins.plugin_capacity * 2) * sizeof(maple_plugin_KV));
+        if (temp)
+        {
+            plugins.plugins = temp;
+            memset(&plugins.plugins[plugins.num_plugins], 0, sizeof(maple_plugin_KV) * plugins.plugin_capacity);
+            plugins.plugin_capacity *= 2;
+        }
+        else
+        {
+            maple_system_panic("CREATE_PLUGIN", "realloc failed!");
+            //maybe just error here?
+        }
+    }
+
+    if (!validate_plugin(&info))
+    {
+        return false;
+    }
+
+    plugins.plugins[plugins.num_plugins].info = info;
+    plugins.plugins[plugins.num_plugins].data.init_proc = init_proc;
+    plugins.plugins[plugins.num_plugins++].data.state = MP_UNLOADED;
+    return true;
+}
+
+BOOL validate_plugin(maple_plugin_info* info)
 {
     if (maple_validate_printable_string(info->name))
     {
         if (maple_validate_printable_string(info->description))
         {
-            for (int i = 0; i < PluginCount; ++i)
+            for (int i = 0; i < plugins.num_plugins; ++i)
             {
-                if (maple_lstrcmp(info->name, Plugins[i].name))
+                if (maple_lstrcmp(info->name, plugins.plugins[i].info.name))
                 {
                     return false;
                 }
@@ -26,51 +95,12 @@ BOOL validate_plugin(MAPLE_PLUGIN_INFO* info)
     return false;
 }
 
-char* maple_get_config_dir()
-{
-    char *home_dir = NULL;
-    char *config_dir = NULL;
-
-#ifdef _WIN32
-    char *appdata = getenv("APPDATA");
-    if (appdata)
-    {
-        config_dir = malloc(strlen(appdata) + strlen("\\maple") + 1);
-        sprintf(config_dir, "%s\\maple", appdata);
-    }
-    else
-    {
-        home_dir = getenv("USERPROFILE");
-
-        config_dir = malloc(strlen(home_dir) + strlen("\\AppData\\Roaming\\maple") + 1);
-        sprintf(config_dir, "%s\\AppData\\Roaming\\maple", home_dir);
-    }
-
-#else
-    home_dir = getenv("HOME");
-    char *xdg_config_home = getenv("XDG_CONFIG_HOME");
-
-    if (xdg_config_home)
-    {
-        config_dir = malloc(strlen(xdg_config_home) + strlen("/maple") + 1);
-        sprintf(config_dir, "%s/maple", xdg_config_home);
-    }
-    else
-    {
-        config_dir = malloc(strlen(home_dir) + strlen("/.config/maple") + 1);
-        sprintf(config_dir, "%s/.config/maple", home_dir);
-    }
-#endif
-
-    return config_dir;
-}
-
 
 void maple_init_plugin_system()
 {
-    Plugins = malloc(sizeof(MAPLE_PLUGIN_INFO) * 256);
-    memset(Plugins, 0, sizeof(MAPLE_PLUGIN_INFO) * 256);
-    PluginCount = 0;
+    plugins.plugins = malloc(sizeof(maple_plugin_KV) * 256);
+    plugins.plugin_capacity = 256;
+    memset(plugins.plugins, 0, sizeof(maple_plugin_KV) * 256);
 }
 
 

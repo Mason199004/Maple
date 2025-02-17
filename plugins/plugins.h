@@ -8,10 +8,14 @@ typedef struct
     U64 plugin_version; //x.x.x.x each value is 2 bytes
     LSTR name;
     LSTR description;
-} MAPLE_PLUGIN_INFO;
-// probably not going to use the struct anymore, will likely keep the same info but as multiple symbols in the
-// plugin dll's, lookup using dlsym or wtv
+} maple_plugin_info;
 
+typedef enum
+{
+    MP_UNLOADED,
+    MP_LOADED,
+    MP_READY
+} maple_plugin_load_state;
 
 typedef struct
 {
@@ -25,7 +29,26 @@ typedef struct
     void (*maple_plugin_log_warning)(LSTR str);
     void (*maple_plugin_log_info)(LSTR str);
     //will contain function pointers to all maple plugin system functions, struct in passed into a plugins init function
-} maple_plugin_start_info;
+} maple_plugin_procs;
+
+typedef struct
+{
+    void (*init_proc)(maple_plugin_procs proc_struct);
+    maple_plugin_load_state state;
+} maple_plugin_data;
+
+typedef struct
+{
+    maple_plugin_info info;
+    maple_plugin_data data;
+} maple_plugin_KV;
+
+typedef struct
+{
+    U64 num_plugins;
+    U64 plugin_capacity;
+    maple_plugin_KV* plugins;
+} maple_plugins;
 
 BOOL maple_register_property(PROPERTY_DEF prop, PROPERTY_ACCESS external_access_level);
 
@@ -43,6 +66,8 @@ void maple_plugin_log_warning(LSTR str);
 
 void maple_plugin_log_info(LSTR str);
 
+BOOL maple_create_plugin(maple_plugin_info info, void (*init_proc)(maple_plugin_procs));
 
+BOOL validate_plugin(maple_plugin_info* info);
 
 #endif //MAPLE_PLUGINS_H
