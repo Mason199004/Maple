@@ -9,4 +9,5 @@ add_executable(Maple main.c
         MapleTypes.c
 		logging/logging.c
 		core/core.c
+		plugins/core_config_provider.c
 )

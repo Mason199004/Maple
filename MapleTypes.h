@@ -28,6 +28,9 @@ typedef struct
     U8* str;
 } LSTR;
 
+#define MAKE_LSTR(str_) (LSTR){.size = sizeof(str_) - 1, .str = str_}
+
+
 typedef struct
 {
     I32 count;
@@ -84,9 +87,13 @@ typedef struct
     PROPERTY_ACCESS access_level;
 } PROPERTY_INFO;
 
-/// the current property model might be limiting since its just K:V pairs, current goal of plugins defining
-/// serialization and compiler/linker bs might be hard to implement, possible implementation is by doing
-/// cursed string weirdness like "MI_COMPILERDEF_<NAME>_<FUNC>", not a big fan of this, but it could work
+// the current property model might be limiting since its just K:V pairs, current goal of plugins defining
+// serialization and compiler/linker bs might be hard to implement, possible implementation is by doing
+// cursed string weirdness like "MI_COMPILERDEF_<NAME>_<FUNC>", not a big fan of this, but it could work
+//
+// Project Format Provider:
+// MI_ProjectFormatProvider_<FormatName>_ReadFile  : M_PTR -> BOOL (*)(const char* project_path) | REQUIRED
+// MI_ProjectFormatProvider_<FormatName>_WriteFile : M_PTR -> BOOL (*)(const char* project_path) | REQUIRED
 
 BOOL maple_validate_printable_string(LSTR str);
 

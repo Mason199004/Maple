@@ -1,7 +1,7 @@
-#include "../MapleTypes.h"
-#include "../Project/MapleProj.h"
 #ifndef MAPLE_PLUGINS_H
 #define MAPLE_PLUGINS_H
+#include "../MapleTypes.h"
+#include "../Project/MapleProj.h"
 
 typedef struct
 {
@@ -9,6 +9,8 @@ typedef struct
     LSTR name;
     LSTR description;
 } maple_plugin_info;
+
+#define MAKE_VERNUM(sig, major, minor, patch) ((((U64)(U16)sig) << 48) | (((U64)(U16)major) << 32) | (((U64)(U16)minor) << 16) | ((U16)patch))
 
 typedef enum
 {
@@ -50,9 +52,13 @@ typedef struct
     maple_plugin_KV* plugins;
 } maple_plugins;
 
+
+//gcc __builtin_return_address + dladdr for getting the handle to calling modules for log purposes and permission checking
+//core plugins will be annoying since this wont work for them
+
 BOOL maple_register_property(PROPERTY_DEF prop, PROPERTY_ACCESS external_access_level);
 
-BOOL maple_write_property(PROPERTY* prop);
+BOOL maple_write_property(PROPERTY prop);
 
 BOOL maple_read_property(LSTR property_name, PROPERTY* out_prop);
 
