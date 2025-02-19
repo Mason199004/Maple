@@ -35,7 +35,7 @@ typedef struct
 
 typedef struct
 {
-    void (*init_proc)(maple_plugin_procs proc_struct);
+    BOOL (*init_proc)(maple_plugin_procs proc_struct);
     maple_plugin_load_state state;
 } maple_plugin_data;
 

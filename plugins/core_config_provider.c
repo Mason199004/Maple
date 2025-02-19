@@ -1,29 +1,32 @@
 #include "core_config_provider.h"
 
+#include <stdio.h>
+
 U64 core_config_version = MAKE_VERNUM(0, 0, 1, 0);
 
 LSTR core_config_name = MAKE_LSTR("CoreCFG");
 
 LSTR core_config_desc = MAKE_LSTR("Provides a simple text based config format");
 
-BOOL core_config_read_file(const char* path)
+BOOL core_config_read_file(FILE* path)
 {
 
 }
 
-BOOL core_config_write_file(const char* path)
+BOOL core_config_write_file(FILE* path)
 {
 
 }
 
 maple_plugin_procs procs = {0};
-void init_core_config_provider(maple_plugin_procs proc_struct)
+
+BOOL init_core_config_provider(maple_plugin_procs proc_struct)
 {
 	if (proc_struct.struct_size != sizeof(maple_plugin_procs))
 	{
 		//wat
 		maple_plugin_log_error(MAKE_LSTR("Mismatch plugin procs somehow"));
-		return;
+		return false;
 	}
 	procs = proc_struct;
 
@@ -36,7 +39,7 @@ void init_core_config_provider(maple_plugin_procs proc_struct)
 	if (registered_read == false || registered_write == false)
 	{
 		maple_plugin_log_error(MAKE_LSTR("Failed to register properties"));
-		return;
+		return false;
 	}
 
 	BOOL set_read = maple_write_property((PROPERTY){.name = readName, .value = core_config_read_file});
@@ -45,7 +48,8 @@ void init_core_config_provider(maple_plugin_procs proc_struct)
 	if (set_read == false || set_write == false)
 	{
 		maple_plugin_log_error(MAKE_LSTR("Failed to set properties"));
-		return;
+		return false;
 	}
 
+	return true;
 }

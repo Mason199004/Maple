@@ -92,8 +92,8 @@ typedef struct
 // cursed string weirdness like "MI_COMPILERDEF_<NAME>_<FUNC>", not a big fan of this, but it could work
 //
 // Project Format Provider:
-// MI_ProjectFormatProvider_<FormatName>_ReadFile  : M_PTR -> BOOL (*)(const char* project_path) | REQUIRED
-// MI_ProjectFormatProvider_<FormatName>_WriteFile : M_PTR -> BOOL (*)(const char* project_path) | REQUIRED
+// MI_ProjectFormatProvider_<FormatName>_ReadFile  : M_PTR -> BOOL (*)(FILE* project_file) | REQUIRED
+// MI_ProjectFormatProvider_<FormatName>_WriteFile : M_PTR -> BOOL (*)(FILE* project_file) | REQUIRED
 
 BOOL maple_validate_printable_string(LSTR str);
 
